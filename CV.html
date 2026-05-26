@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 1.8cm 2.2cm;
+    @bottom-center { content: counter(page); font-size: 9pt; color: #999; }
+    @top-left { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+  }
+
+  .header { text-align: center; margin-bottom: 12px; }
+  .header h1 {
+    font-size: 20pt;
+    font-weight: 700;
+    letter-spacing: 4px;
+    margin-bottom: 3px;
+  }
+  .contact {
+    font-size: 9pt;
+    color: #555;
+  }
+  .contact span { margin: 0 6px; }
+  .contact a { color: #555; text-decoration: none; }
+
+  .divider {
+    border: none;
+    border-top: 2px solid #1a1a1a;
+    margin: 8px 0;
+  }
+
+  .section-title {
+    font-size: 11.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 10px 0 6px 0;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .project { margin-bottom: 8px; page-break-inside: avoid; }
+  .project-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .project-head h3 {
+    font-size: 10.5pt;
+    font-weight: 700;
+  }
+  .project-head .year {
+    font-size: 9pt;
+    color: #777;
+    white-space: nowrap;
+  }
+  .project-role {
+    font-size: 9pt;
+    color: #555;
+    margin-bottom: 2px;
+  }
+  .project p { margin-bottom: 2px; text-align: justify; }
+  ul { margin: 1px 0 4px 1.4em; }
+  li { margin-bottom: 0px; text-align: justify; }
+  .results-label { font-weight: 600; margin-top: 3px; margin-bottom: 0px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4px 0;
+    font-size: 9.5pt;
+  }
+  th {
+    width: 15%;
+    text-align: left;
+    vertical-align: top;
+    font-weight: 600;
+    padding: 2px 0;
+  }
+  td { padding: 2px 0; }
+
+  .footnote {
+    text-align: center;
+    font-style: italic;
+    color: #999;
+    font-size: 9pt;
+    margin-top: 10px;
+    padding-top: 6px;
+    border-top: 1px solid #ddd;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>罗学森</h1>
+  <div class="contact">
+    <span>lawsonsylvan@outlook.com</span>
+    <span>|</span>
+    <span>13189346302</span>
+    <span>|</span>
+    <span><a href="https://github.com/JusticAI">github.com/JusticAI</a></span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section-title">项目经验</div>
+
+<div class="project">
+  <div class="project-head">
+    <h3>Karmora — Reddit Karma 策略分析平台</h3>
+    <span class="year">2026</span>
+  </div>
+  <div class="project-role">独立产品经理 + 全栈开发者</div>
+  <p>面向 Reddit 运营者的社区数据平台，帮助用户发现高潜力社区、制定内容策略。</p>
+  <p><b>核心工作：</b></p>
+  <ul>
+    <li><b>产品定义与规划：</b>从0到1完成产品定位——面向 Reddit 运营者提供数据驱动的社区选品工具。自主完成竞品分析、用户画像、需求优先级排序，定义 MVP 范围。</li>
+    <li><b>数据采集系统设计：</b>主导开发 Chrome 扩展，自动化采集 Reddit 社区数据。通过绕过 API 限制的巧妙方案（利用用户浏览器身份+同源请求），实现 <b>5539 个社区的基础信息+规则+Wiki 全量采集，完成率 99.5%</b>。</li>
+    <li><b>AI 驱动开发（Vibe Coding）：</b>全程使用 AI Agent（Claude、XiaomiMimo、DeepSeek 等多模型协作）辅助开发，从架构设计、代码生成到 Debug 实现端到端交付。项目从构思到上线高度依赖 AI 协作，是 <b>Vibe Coding 模式的完整实践</b>。</li>
+    <li><b>全栈实现：</b>前端（Landing Page + Dashboard）→ 后端 API（Vercel Serverless）→ 数据库设计（Supabase PostgreSQL）→ 部署上线。独立处理 3 表关系设计、RLS 权限策略、内测申请审批流。</li>
+    <li><b>产品运营闭环：</b>设计并落地完整的用户转化漏斗：访客 → 提交内测申请 → 后台审核 → 邮箱审批链接 → Beta 用户。实现 Admin 面板用于审核管理，附带批量审批功能。</li>
+    <li><b>产品迭代与架构升级：</b>基于内测反馈推动产品路线图迭代。将初始的 localStorage 原型升级为 <b>Supabase + Vercel Serverless 生产架构</b>，引入 RLS 权限策略、Token 登录验证、审核流等产品化能力，完成 Demo 到可用产品的跃迁。<b>整个升级过程中保持零停機、用户无缝过渡</b>。</li>
+  </ul>
+  <div class="results-label">关键成果</div>
+  <ul>
+    <li>完成 <b>5539 个社区</b>的结构化数据采集与存储</li>
+    <li>平台具备 <b>E2E 的用户申请→审批→使用流程</b></li>
+    <li>完成从本地原型到 <b>Serverless 架构</b>的技术升级，用户无缝迁移</li>
+    <li>AI 协作产出代码占比 <b>&gt;80%</b>，验证了 Vibe Coding 在真实产品开发中的可行性</li>
+  </ul>
+</div>
+
+<div class="project">
+  <div class="project-head">
+    <h3>Auto-Debug 智能错误监控系统</h3>
+    <span class="year">2026</span>
+  </div>
+  <div class="project-role">独立产品经理 + 开发者</div>
+  <p>在 Karmora 开发过程中孵化的 AI 自动化 Debug 工具。Chrome 扩展在无头环境运行会产生大量错误日志，需要一个<b>自愈型</b>的错误监控方案。</p>
+  <p><b>核心工作：</b></p>
+  <ul>
+    <li><b>问题识别与方案设计：</b>设计自动捕获 → 去重指纹 → AI 分析 → 静默或告警 → 自愈的完整方案。</li>
+    <li><b>AI 辅助开发：</b>用 AI Agent 设计错误指纹去重算法（基于错误堆栈+信息摘要生成 SHA-256 指纹），避免同一类错误重复分析浪费 token。</li>
+    <li><b>跨系统集成：</b>content script 注入 ErrorMonitor → chrome.runtime.sendMessage → background.js → chrome.downloads 持久化。配套 Python 脚本定时扫描，通过 cron 调度 AI Agent 分析。</li>
+    <li><b>成本意识设计：</b>无错误时 <b>0 token 消耗</b>（静默跳过），有错误才触发 AI 分析并告警。</li>
+    <li><b>持续优化迭代：</b>根据 Chrome MV3 限制持续优化架构——从 content script 直接写文件改为 sendMessage 中转 → background.js → chrome.downloads，解决 Service Worker 无 DOM 访问的兼容问题。</li>
+  </ul>
+  <div class="results-label">关键成果</div>
+  <ul>
+    <li>实现错误采集 → 去重 → 分析 → 告警<b>全自动化闭环</b></li>
+    <li>运行模式为<b>「部署后无需人工干预」</b>，符合真实生产环境要求</li>
+    <li>证明 AI Agent 不仅可用于代码生成，也可用于<b>产线运维监控</b></li>
+  </ul>
+</div>
+
+<div class="project">
+  <div class="project-head">
+    <h3>Chrome 翻译插件</h3>
+    <span class="year">2026</span>
+  </div>
+  <div class="project-role">产品经理 + 开发者</div>
+  <ul>
+    <li>使用 Google Translate API 实现页面级翻译</li>
+    <li>设计 <b>MutationObserver</b> 方案自动翻译动态加载的内容（SPA 兼容）</li>
+    <li>GitHub: github.com/luoxuesen/chrome-translator-extension</li>
+  </ul>
+</div>
+
+<div class="section-title">核心能力</div>
+<table>
+  <tr><th>AI 应用</th><td><b>LLM Agent 协作开发</b>（Vibe Coding）、AI Agent 自动化运维、Prompt Engineering</td></tr>
+  <tr><th>产品设计</th><td>从0到1产品规划、竞品分析、用户漏斗设计、需求优先级管理</td></tr>
+  <tr><th>技术实现</th><td>Chrome 扩展（MV3）、<b>Supabase</b>/Firebase、<b>Vercel Serverless</b>、React/HTML/CSS</td></tr>
+  <tr><th>数据分析</th><td>Reddit 社区数据采集与分析、数据驱动决策</td></tr>
+  <tr><th>工具链</th><td>Git、Supabase Studio、Chrome DevTools、AI 辅助开发全流程</td></tr>
+</table>
+
+<div class="section-title">荣誉与资质</div>
+<ul>
+  <li><b>小米 Mimo Orbit 百万亿 Token 创造者激励计划</b> 入选者</li>
+</ul>
+
+<div class="section-title">教育背景</div>
+<ul>
+  <li>本科 &nbsp;广东省肇庆学院</li>
+</ul>
+
+<div class="footnote">以上项目均为独立完成，充分体现了在 AI 辅助下「一个人的产品团队」的交付能力。</div>
+
+</body>
+</html>

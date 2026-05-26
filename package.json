@@ -1,0 +1,14 @@
+{
+  "name": "karmora",
+  "version": "1.0.0",
+  "description": "Karmora — Reddit Karma 策略平台",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site, no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.3",
+    "bcryptjs": "^3.0.3"
+  }
+}

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 400px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 16px;
+        }
+        h1 {
+            font-size: 16px;
+            color: #ff6b35;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            background: #0f3460;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #eee;
+            font-size: 11px;
+            padding: 8px;
+            resize: none;
+        }
+        textarea:focus { outline: none; border-color: #ff6b35; }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #ff6b35; color: white; }
+        .btn-primary:hover { background: #e55a2b; }
+        .btn-primary:disabled { background: #555; cursor: not-allowed; }
+        .btn-secondary { background: #333; color: #eee; }
+        .btn-secondary:hover { background: #444; }
+        .btn-danger { background: #c0392b; color: white; }
+        .btn-danger:hover { background: #a93226; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #229954; }
+        .btn-sync { background: #3498db; color: white; }
+        .btn-sync:hover { background: #2980b9; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .stat-item {
+            background: #0f3460;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b35;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .stages {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .stage-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #0f3460;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .stage-item:hover { border-color: #ff6b35; }
+        .stage-item.selected { border-color: #ff6b35; background: #1a3a5c; }
+        .stage-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .stage-number.active { background: #ff6b35; }
+        .stage-number.complete { background: #27ae60; }
+        .stage-info { flex: 1; }
+        .stage-name { font-size: 12px; font-weight: 600; }
+        .stage-desc { font-size: 10px; color: #888; }
+        .stage-progress { font-size: 10px; color: #aaa; margin-top: 2px; }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #ff6b35;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .status {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .status.running { color: #2ecc71; }
+        .status.complete { color: #3498db; }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-group button { flex: 1; }
+        .note {
+            font-size: 11px;
+            color: #888;
+            margin-top: 8px;
+            padding: 8px;
+            background: #0f3460;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Reddit 社区采集器</h1>
+
+    <div class="section">
+        <div class="section-title">选择起始阶段</div>
+        <div class="stages" id="stageSelector">
+            <div class="stage-item" data-stage="1">
+                <div class="stage-number">1</div>
+                <div class="stage-info">
+                    <div class="stage-name">基础信息 + 规则</div>
+                    <div class="stage-desc">about.json + rules.json</div>
+                    <div class="stage-progress" id="stage1Status">未开始</div>
+                </div>
+            </div>
+            <div class="stage-item" data-stage="2">
+                <div class="stage-number">2</div>
+                <div class="stage-info">
+                    <div class="stage-name">版主 + 提交指南</div>
+                    <div class="stage-desc">moderators + submit_text</div>
+                    <div class="stage-progress" id="stage2Status">未开始</div>
+                </div>
+            </div>
+            <div class="stage-item" data-stage="3">
+                <div class="stage-number">3</div>
+                <div class="stage-info">
+                    <div class="stage-name">Wiki 内容</div>
+                    <div class="stage-desc">wiki pages + content</div>
+                    <div class="stage-progress" id="stage3Status">未开始</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">采集状态</div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">总数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="completedCount">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="errorCount">0</div>
+                <div class="stat-label">错误</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="requestCount">0</div>
+                <div class="stat-label">请求数</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="status" id="statusText">等待加载数据</div>
+    </div>
+
+    <div class="section" id="qualitySection" style="display: none;">
+        <div class="section-title">数据质量报告</div>
+        <div id="qualityReport" style="font-size: 11px; line-height: 1.6;"></div>
+    </div>
+
+    <div class="section">
+        <div class="btn-group">
+            <button id="checkBtn" class="btn-sync" style="background: #9b59b6;">🔍 检查质量</button>
+            <button id="startBtn" class="btn-primary" disabled>开始采集</button>
+            <button id="stopBtn" class="btn-danger" disabled>停止</button>
+        </div>
+        <button id="downloadBtn" class="btn-secondary" disabled>下载全部结果</button>
+        <button id="bugReportBtn" class="btn-sync" style="background: #e74c3c; margin-top: 8px;">🐛 生成错误报告</button>
+        <button id="resetBtn" class="btn-secondary">重置</button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

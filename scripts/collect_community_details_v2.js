@@ -1,0 +1,243 @@
+/**
+ * Reddit 社区详情采集脚本 - 阶段1 (简化版)
+ * 采集 about.json + rules.json
+ * 
+ * 在 www.reddit.com 的 Console 中执行
+ * 自动从 Supabase 读取社区列表，不需要手动复制 JSON
+ * 
+ * 预计耗时：~12 小时
+ */
+
+(async () => {
+    // ============ 配置 ============
+    const SUPABASE_URL = 'https://hglgjtmasverfapdnwsh.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_0ihuPggitdx0K-uQdIfNgQ_5xoxQbCk';
+    const CONFIG = {
+        REQUEST_INTERVAL: 4000,
+        RESUME_THRESHOLD: 15,
+        MAX_RETRIES: 5,
+        SAVE_INTERVAL: 50,
+        STORAGE_KEY: 'karmora_details_progress',
+    };
+
+    // ============ 从 Supabase 加载社区列表 ============
+    console.log('📡 从 Supabase 加载社区列表...');
+
+    let communities = [];
+    let offset = 0;
+    const pageSize = 1000;
+
+    while (true) {
+        try {
+            const resp = await fetch(
+                `${SUPABASE_URL}/rest/v1/communities?select=name,subscribers&order=subscribers.desc&limit=${pageSize}&offset=${offset}`,
+                {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    }
+                }
+            );
+            const data = await resp.json();
+            if (data.length === 0) break;
+            communities = communities.concat(data);
+            offset += pageSize;
+            if (data.length < pageSize) break;
+        } catch (e) {
+            console.log(`❌ 加载失败: ${e.message}`);
+            return;
+        }
+    }
+
+    console.log(`✅ 加载完成: ${communities.length} 个社区\n`);
+
+    // ============ 恢复进度 ============
+    let completed = {};
+    let errors = [];
+    let totalRequests = 0;
+
+    try {
+        const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            completed = parsed.completed || {};
+            errors = parsed.errors || [];
+            totalRequests = parsed.totalRequests || 0;
+            console.log(`📂 恢复进度: 已完成 ${Object.keys(completed).length} 个社区\n`);
+        }
+    } catch {}
+
+    // 过滤已采集的
+    const pending = communities.filter(c => !completed[c.name]);
+    console.log(`📊 待采集: ${pending.length} 个\n`);
+
+    if (pending.length === 0) {
+        console.log('✅ 全部已完成！输入 downloadResults() 下载结果');
+        window.downloadResults = () => downloadResults(completed, errors, totalRequests);
+        return;
+    }
+
+    // ============ 请求函数 ============
+    async function fetchJSON(url) {
+        for (let i = 0; i < CONFIG.MAX_RETRIES; i++) {
+            try {
+                const resp = await fetch(url, { credentials: 'same-origin' });
+                totalRequests++;
+
+                const remaining = parseFloat(resp.headers.get('x-ratelimit-remaining') || '999');
+                const reset = parseFloat(resp.headers.get('x-ratelimit-reset') || '0');
+
+                if (remaining < CONFIG.RESUME_THRESHOLD && reset > 0) {
+                    const waitMs = (reset + 5) * 1000;
+                    console.log(`  ⏳ 剩余 ${remaining}，等待 ${Math.ceil(waitMs / 1000)} 秒...`);
+                    await new Promise(r => setTimeout(r, waitMs));
+                }
+
+                if (resp.status === 429) {
+                    const retryAfter = parseInt(resp.headers.get('retry-after') || '60');
+                    console.log(`  ⏳ HTTP 429，等待 ${retryAfter} 秒...`);
+                    await new Promise(r => setTimeout(r, (retryAfter + 5) * 1000));
+                    continue;
+                }
+
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const text = await resp.text();
+                try { return JSON.parse(text); }
+                catch { throw new Error('Invalid JSON'); }
+
+            } catch (e) {
+                if (i === CONFIG.MAX_RETRIES - 1) throw e;
+                await new Promise(r => setTimeout(r, Math.min(5000 * (i + 1), 30000)));
+            }
+        }
+    }
+
+    // ============ 采集单个社区 ============
+    async function collectCommunity(name) {
+        const result = { name, about: null, rules: null, collected_at: new Date().toISOString() };
+
+        // about.json
+        try {
+            const data = await fetchJSON(`/r/${name}/about.json`);
+            const d = data.data;
+            result.about = {
+                name: d.display_name,
+                title: d.title || '',
+                public_description: d.public_description || '',
+                description: d.description || '',
+                subscribers: d.subscribers || 0,
+                active_users: d.accounts_active || 0,
+                created_utc: d.created_utc || 0,
+                over18: d.over18 || false,
+                subreddit_type: d.subreddit_type || 'public',
+                lang: d.lang || 'en',
+                icon_img: d.icon_img || '',
+                banner_img: d.banner_img || '',
+                community_icon: d.community_icon || '',
+                url: d.url || '',
+            };
+        } catch (e) {
+            result.about_error = e.message;
+        }
+
+        await new Promise(r => setTimeout(r, CONFIG.REQUEST_INTERVAL));
+
+        // rules.json
+        try {
+            const data = await fetchJSON(`/r/${name}/about/rules.json`);
+            result.rules = (data.rules || []).map(r => ({
+                short_name: r.short_name || '',
+                description: r.description || '',
+                violation_reason: r.violation_reason || '',
+                priority: r.priority || 0,
+            }));
+        } catch (e) {
+            result.rules_error = e.message;
+        }
+
+        return result;
+    }
+
+    // ============ 保存进度 ============
+    function save() {
+        try {
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({ completed, errors, totalRequests }));
+        } catch {}
+    }
+
+    // ============ 下载结果 ============
+    function downloadResults(completed, errors, totalRequests) {
+        const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+        const output = {
+            meta: {
+                collected_at: new Date().toISOString(),
+                elapsed_minutes: parseFloat(elapsed),
+                total_requests: totalRequests,
+                total_communities: Object.keys(completed).length,
+                errors: errors.length,
+            },
+            communities: Object.values(completed)
+        };
+        const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reddit_community_details_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // ============ 主循环 ============
+    const startTime = Date.now();
+
+    console.log('🚀 开始采集 (阶段1: about + rules)');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('每 4 秒一个请求 | 每 50 个社区自动保存');
+    console.log('按 Esc → 点 ■ 可随时停止\n');
+
+    for (let i = 0; i < pending.length; i++) {
+        const name = pending[i].name;
+
+        try {
+            const result = await collectCommunity(name);
+            completed[name] = result;
+            if (result.about_error || result.rules_error) {
+                errors.push({ name, about_error: result.about_error, rules_error: result.rules_error });
+            }
+        } catch (e) {
+            errors.push({ name, error: e.message });
+            console.log(`  ❌ "${name}": ${e.message}`);
+        }
+
+        // 进度
+        const done = Object.keys(completed).length;
+        const total = communities.length;
+        if ((i + 1) % 10 === 0) {
+            const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+            const eta = ((total - done) * 4 / 60).toFixed(0);
+            console.log(`  📊 ${done}/${total} | ${elapsed}分 | 剩余~${eta}分 | 请求${totalRequests}`);
+        }
+
+        // 保存
+        if ((i + 1) % CONFIG.SAVE_INTERVAL === 0) {
+            save();
+            downloadResults(completed, errors, totalRequests);
+            console.log(`  💾 进度已保存`);
+        }
+
+        await new Promise(r => setTimeout(r, CONFIG.REQUEST_INTERVAL));
+    }
+
+    // 完成
+    save();
+    downloadResults(completed, errors, totalRequests);
+
+    const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+    console.log('\n🎉 采集完成!');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📊 ${Object.keys(completed).length} 个社区`);
+    console.log(`⏱️  ${elapsed} 分钟`);
+    console.log(`❌ ${errors.length} 个错误`);
+})();

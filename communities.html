@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社区数据库 — Karmora</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --orange: #FF4500; --orange-dark: #E03D00; --dark: #1A1A1B; --gray: #787C7E; --light-gray: #F6F7F8; --white: #FFFFFF; --green: #46D160; --red: #FF585B; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; color: var(--dark); line-height: 1.6; background: var(--white); padding-top: 64px; }
+        .beta-banner { background: linear-gradient(135deg, #FFF0EB 0%, #FFE4D6 100%); border-bottom: 1px solid #FFD6C2; padding: 12px 24px; text-align: center; font-size: 14px; font-weight: 600; color: var(--orange-dark); position: relative; z-index: 99; }
+        .beta-banner .badge { display: inline-block; background: var(--orange); color: white; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+        .beta-banner .note { font-weight: 400; color: var(--gray); margin-left: 4px; }
+        nav { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #EDEFF1; z-index: 100; padding: 0 24px; }
+        .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: var(--orange); text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .nav-links { display: flex; gap: 8px; margin-right: auto; margin-left: 40px; }
+        .nav-link { padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 600; color: var(--gray); text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+        .nav-link:hover { color: var(--dark); background: var(--light-gray); }
+        .nav-link.active { color: var(--orange); background: #FFF0EB; border-color: #FFD6C2; }
+        .page { padding: 100px 24px 80px; max-width: 1100px; margin: 0 auto; }
+        .page-title { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+        .page-sub { font-size: 18px; color: var(--gray); margin-bottom: 24px; }
+        .stats-bar { display: flex; gap: 24px; margin-bottom: 24px; font-size: 14px; color: var(--gray); }
+        .stats-bar strong { color: var(--orange); }
+
+        .search-box { display: flex; gap: 12px; margin-bottom: 16px; }
+        .search-input { flex: 1; padding: 12px 16px; border: 2px solid #EDEFF1; border-radius: 10px; font-size: 15px; outline: none; }
+        .search-input:focus { border-color: var(--orange); }
+
+        .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .filter-label { font-size: 13px; font-weight: 700; color: var(--dark); margin-right: 4px; }
+        .filter-btn { padding: 6px 14px; border: 1px solid #EDEFF1; border-radius: 9999px; background: white; font-size: 12px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; }
+        .filter-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .filter-btn.active { background: var(--orange); color: white; border-color: var(--orange); }
+        .filter-sep { width: 1px; height: 20px; background: #EDEFF1; margin: 0 4px; }
+
+        .sort-bar { display: flex; gap: 8px; margin-bottom: 20px; align-items: center; }
+        .sort-btn { padding: 6px 14px; border: 1px solid #EDEFF1; border-radius: 8px; background: white; font-size: 12px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; }
+        .sort-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .sort-btn.active { background: #FFF0EB; color: var(--orange); border-color: #FFD6C2; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .card { background: white; border: 1px solid #EDEFF1; border-radius: 12px; padding: 20px; transition: all 0.2s; }
+        .card:hover { border-color: var(--orange); box-shadow: 0 4px 16px rgba(255,69,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .card-name { font-weight: 700; font-size: 16px; color: var(--orange); }
+        .card-badge { font-size: 11px; padding: 3px 10px; border-radius: 9999px; font-weight: 600; }
+        .badge-excellent { background: #E8F5E9; color: #2E7D32; }
+        .badge-good { background: #FFF8E1; color: #F57F17; }
+        .badge-fair { background: #FFF0F0; color: #C62828; }
+        .badge-low { background: #F5F5F5; color: #999; }
+        .card-meta { font-size: 12px; color: var(--gray); margin-bottom: 8px; }
+        .card-desc { font-size: 13px; color: var(--gray); margin-bottom: 10px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-stats { display: flex; gap: 14px; font-size: 12px; font-weight: 600; }
+        .card-stats .sub { color: var(--green); }
+        .card-stats .active { color: var(--orange); }
+        .card-stats .cat { color: var(--gray); background: var(--light-gray); padding: 2px 8px; border-radius: 4px; }
+
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+        .page-btn { padding: 8px 14px; border: 1px solid #EDEFF1; border-radius: 8px; background: white; font-size: 13px; cursor: pointer; }
+        .page-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .page-btn.active { background: var(--orange); color: white; border-color: var(--orange); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-info { font-size: 13px; color: var(--gray); padding: 8px 0; }
+
+        footer { text-align: center; padding: 40px 24px; color: var(--gray); font-size: 14px; border-top: 1px solid #EDEFF1; }
+    </style>
+</head>
+<body>
+<script>
+    if (localStorage.getItem("karmora_unlocked") !== "true") {
+        window.location.href = "index.html";
+    }
+</script>
+<div class="beta-banner"><span class="badge">Beta</span>内测期：所有功能限时免费<span class="note"> — 内测结束后将转为会员制收费模式</span></div>
+<nav>
+    <div class="nav-inner">
+        <a href="index.html" class="logo"><div class="logo-icon">K</div>Karmora</a>
+        <div class="nav-links">
+            <a href="communities.html" class="nav-link active">社区数据库</a>
+            <a href="match.html" class="nav-link">智能匹配</a>
+            <a href="assistant.html" class="nav-link">规则检查</a>
+        </div>
+        <div class="nav-right" style="display:flex;align-items:center;gap:12px;">
+            <span id="userEmail" style="font-size:13px;color:#787C7E;"></span>
+            <a href="#" onclick="logout()" class="nav-link" style="font-size:13px;color:#FF585B;">退出</a>
+        </div>
+    </div>
+</nav>
+<script>
+try{const u=JSON.parse(localStorage.getItem('karmora_user')||'{}');if(u.email)document.getElementById('userEmail').textContent=u.email;}catch(e){}
+function logout(){localStorage.removeItem('karmora_user');localStorage.removeItem('karmora_unlocked');sessionStorage.removeItem('karmora_user');window.location.href='/login.html';}
+</script>
+
+<div class="page">
+    <h1 class="page-title">📊 社区数据库</h1>
+    <p class="page-sub">基于 5,539 个 Reddit 社区的深度数据分析，找到最适合你的战场</p>
+
+    <div class="stats-bar">
+        <span>总计 <strong id="totalCount">5,539</strong> 个社区</span>
+        <span>当前显示 <strong id="showCount">0</strong> 个</span>
+    </div>
+
+    <div class="search-box">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索社区名称、描述...">
+    </div>
+
+    <div class="filters" id="categoryFilters">
+        <span class="filter-label">分类：</span>
+    </div>
+
+    <div class="filters" id="sizeFilters">
+        <span class="filter-label">规模：</span>
+    </div>
+
+    <div class="sort-bar">
+        <span class="filter-label">排序：</span>
+        <button class="sort-btn active" data-sort="subscribers" data-order="desc">订阅数 ↓</button>
+        <button class="sort-btn" data-sort="subscribers" data-order="asc">订阅数 ↑</button>
+        <button class="sort-btn" data-sort="active_users" data-order="desc">活跃度 ↓</button>
+        <button class="sort-btn" data-sort="name" data-order="asc">名称 A-Z</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<footer>Karmora © 2026 · 帮你安全度过 Reddit 冷启动期</footer>
+
+<script src="js/data.js"></script>
+<script>
+const PER_PAGE = 50;
+let currentPage = 1;
+let currentCategory = 'all';
+let currentSize = 'all';
+let currentSort = 'subscribers';
+let currentOrder = 'desc';
+let searchQuery = '';
+
+// Category config
+const CATEGORIES = {
+    all: '全部',
+    ecommerce: '🛒 电商',
+    tech: '💻 科技',
+    gaming: '🎮 游戏',
+    crypto_finance: '💰 金融',
+    lifestyle: '🌿 生活',
+    social: '💬 社交',
+    entertainment: '🎬 娱乐',
+    science: '🔬 科学',
+    news_politics: '📰 新闻政治',
+    creative: '🎨 创意',
+    career: '💼 职业',
+    marketing: '📢 营销',
+    sports: '⚽ 体育',
+    auto: '🚗 汽车',
+    pets_animals: '🐾 宠物动物',
+    region: '🌍 地区城市',
+    media_fandom: '🎭 影视粉丝',
+    music_artist: '🎵 音乐艺人',
+    self_improvement: '📈 自我提升',
+    meme_shitpost: '😂 Meme/搞笑',
+    non_english: '🌐 非英语社区',
+    decade_nostalgia: '📼 年代怀旧',
+    debate_judge: '⚖️ 辩论评判',
+    brand_tech: '🏢 品牌/产品',
+    reddit_meta: '🤖 Reddit 元',
+    vehicles_transport: '✈️ 交通出行',
+    misc_interest: '🎯 兴趣爱好',
+    other: '📁 其他',
+};
+
+const SIZES = {
+    all: '全部',
+    mega: '🔵 超大 (1000万+)',
+    large: '🟢 大型 (100万+)',
+    medium: '🟡 中型 (10万+)',
+    small: '🟠 小型 (1万+)',
+    micro: '⚪ 微型 (<1万)',
+};
+
+const BADGE_LABELS = {
+    excellent: '⭐ 推荐',
+    good: '✅ 良好',
+    fair: '⚠️ 一般',
+    low: '💤 低活',
+};
+
+function formatNum(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n;
+}
+
+// Build filter buttons
+function buildFilters() {
+    const catDiv = document.getElementById('categoryFilters');
+    for (const [key, label] of Object.entries(CATEGORIES)) {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (key === 'all' ? ' active' : '');
+        btn.dataset.category = key;
+        btn.textContent = label;
+        btn.onclick = () => setCategory(key);
+        catDiv.appendChild(btn);
+    }
+
+    const sizeDiv = document.getElementById('sizeFilters');
+    for (const [key, label] of Object.entries(SIZES)) {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (key === 'all' ? ' active' : '');
+        btn.dataset.size = key;
+        btn.textContent = label;
+        btn.onclick = () => setSize(key);
+        sizeDiv.appendChild(btn);
+    }
+}
+
+function setCategory(cat) {
+    currentCategory = cat;
+    currentPage = 1;
+    document.querySelectorAll('#categoryFilters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.category === cat));
+    render();
+}
+
+function setSize(size) {
+    currentSize = size;
+    currentPage = 1;
+    document.querySelectorAll('#sizeFilters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.size === size));
+    render();
+}
+
+// Sort buttons
+document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentSort = btn.dataset.sort;
+        currentOrder = btn.dataset.order;
+        currentPage = 1;
+        document.querySelectorAll('.sort-btn[data-sort]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    });
+});
+
+// Search
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        searchQuery = e.target.value.trim().toLowerCase();
+        currentPage = 1;
+        render();
+    }, 200);
+});
+
+// Filter + Sort + Paginate
+function getFiltered() {
+    let data = COMMUNITIES || [];
+
+    if (searchQuery) {
+        data = data.filter(c =>
+            (c.name || '').toLowerCase().includes(searchQuery) ||
+            (c.title || '').toLowerCase().includes(searchQuery) ||
+            (c.desc || '').toLowerCase().includes(searchQuery)
+        );
+    }
+
+    if (currentCategory !== 'all') {
+        data = data.filter(c => c.category === currentCategory);
+    }
+    if (currentSize !== 'all') {
+        data = data.filter(c => c.size === currentSize);
+    }
+
+    data.sort((a, b) => {
+        let va = a[currentSort] || 0, vb = b[currentSort] || 0;
+        if (typeof va === 'string') return currentOrder === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        return currentOrder === 'asc' ? va - vb : vb - va;
+    });
+
+    return data;
+}
+
+function render() {
+    const filtered = getFiltered();
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / PER_PAGE);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+
+    const start = (currentPage - 1) * PER_PAGE;
+    const page = filtered.slice(start, start + PER_PAGE);
+
+    document.getElementById('showCount').textContent = total;
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = page.map(c => `
+        <div class="card">
+            <div class="card-header">
+                <span class="card-name">r/${c.name}</span>
+                <span class="card-badge badge-${c.badge}">${BADGE_LABELS[c.badge] || c.badge}</span>
+            </div>
+            <div class="card-meta">${c.title || ''}</div>
+            <div class="card-desc">${c.desc || '暂无描述'}</div>
+            <div class="card-stats">
+                <span class="sub">👥 ${formatNum(c.subscribers)}</span>
+                <span class="active">🔥 ${formatNum(c.active_users)} 活跃</span>
+                <span class="cat">${CATEGORIES[c.category] || c.category}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Pagination
+    const pag = document.getElementById('pagination');
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+    let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← 上一页</button>`;
+
+    const range = [];
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            range.push(i);
+        } else if (range[range.length - 1] !== '...') {
+            range.push('...');
+        }
+    }
+    range.forEach(p => {
+        if (p === '...') {
+            html += `<span class="page-info">...</span>`;
+        } else {
+            html += `<button class="page-btn${p === currentPage ? ' active' : ''}" onclick="goPage(${p})">${p}</button>`;
+        }
+    });
+
+    html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页 →</button>`;
+    html += `<span class="page-info">共 ${totalPages} 页</span>`;
+    pag.innerHTML = html;
+}
+
+function goPage(p) {
+    const filtered = getFiltered();
+    const totalPages = Math.ceil(filtered.length / PER_PAGE);
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    render();
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+}
+
+buildFilters();
+render();
+</script>
+</body>
+</html>

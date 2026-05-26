@@ -1,0 +1,703 @@
+[
+  {
+    "community": "fountainpens",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/fountainpens: /r/fountainpens - A community for fountain pen enthusiasts, from the novice to the collector.\n\n\nPlea",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No recent reposts",
+        "No commercial transactions, buy/sell/trade requests belong on r/pen_swap",
+        "No AI-generated media"
+      ],
+      "tone": "humorous",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "external links",
+        "spam",
+        "affiliate links",
+        "self-promotion",
+        "NSFW content",
+        "begging/asking"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "google",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/google: For news, announcements, and discussions, from and about Google and related topics.",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No support questions",
+        "No shilling/Conspiracy theories",
+        "Has nothing to do with Google",
+        "No Referrals/Discount codes"
+      ],
+      "tone": "supportive",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖"
+      ],
+      "risk_keywords": [
+        "self-promotion",
+        "spam"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "InternetIsBeautiful",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/InternetIsBeautiful: ",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No Aggregations or Collections",
+        "Not Unique",
+        "No Webgames",
+        "No Articles, Videos or Images",
+        "No Stores or Demos"
+      ],
+      "tone": "humorous",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "self-promotion",
+        "external links",
+        "political content"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "UnearthedArcana",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/UnearthedArcana: A subreddit for D&amp;D 5e homebrew. Fun and smart additions to the game, the friendly Discord of Ma",
+      "allowed_topics": [],
+      "banned_topics": [
+        "Do Not Use AI to Generate Content"
+      ],
+      "tone": "academic",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ",
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "external links"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "awfuleverything",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/awfuleverything: Everything Awful!\n\nLament with us as we view all things that are just genuinely awful.",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No violations of Reddit's content policy",
+        "No Minors",
+        "Do not post videos of, link to, or ask for links to tragedies",
+        "No Politics",
+        "No Meta"
+      ],
+      "tone": "casual",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖"
+      ],
+      "risk_keywords": [
+        "external links",
+        "affiliate links",
+        "reposts",
+        "self-promotion",
+        "political content"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "Costco",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/Costco: Welcome to Costco, we love you. \n\nThis is an unofficial Costco subreddit, r/Costco is not affiliated",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No Availability or Future Sale Question Posts - Allowed In Monthly Megathread Only",
+        "No Low Effort Posts, No Rage Bait, No Personal Attacks, No Trolling, Be Civil",
+        "No Reposts of Previously Asked Questions or Discussions - Utilize Search Before Posting",
+        "No Suggesting or Advocating for Policy Breaking",
+        "No Vague Post Titles - Specific Question and/or Product Name Must Be Included "
+      ],
+      "tone": "supportive",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则"
+      ],
+      "risk_keywords": [
+        "political content",
+        "external links",
+        "low-effort content",
+        "begging/asking"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "chess",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/chess: All about the game of chess, including discussions on professional tournaments, game analysis and th",
+      "allowed_topics": [],
+      "banned_topics": [
+        "Low-Quality submissions are not allowed.",
+        "Off-Topic submissions are not allowed.",
+        "Do not politicize r/Chess.",
+        "Do not use /r/chess primarily to promote your own content.",
+        "Unfounded or non-newsworthy cheating accusations are not allowed."
+      ],
+      "tone": "professional",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则"
+      ],
+      "risk_keywords": [
+        "external links",
+        "begging/asking",
+        "spam",
+        "self-promotion",
+        "low-effort content",
+        "political content"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "MachineLearning",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/MachineLearning: Beginners -&gt; /r/mlquestions or /r/learnmachinelearning , AGI -&gt; /r/singularity, career advices",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No Spam",
+        "No Self-Promotion",
+        "No Marketing Campaigns (SEO)",
+        "No Disrespectful Behavior",
+        "No arXiv Links without Body Text"
+      ],
+      "tone": "academic",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则"
+      ],
+      "risk_keywords": [
+        "external links",
+        "spam",
+        "low-effort content",
+        "begging/asking"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "XboxGamePass",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/XboxGamePass: Game Pass Console, PC and Cloud News, and Discussion",
+      "allowed_topics": [],
+      "banned_topics": [
+        "Be Civil &amp; No Ranting",
+        "No selling/trading/begging",
+        "Banned Websites"
+      ],
+      "tone": "supportive",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则"
+      ],
+      "risk_keywords": [
+        "self-promotion"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "comics",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/comics: Everything related to print comics (comic books, graphic novels, and strips) and web comics.  Artist",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No complaining",
+        "No drama or trolling. No Hateful content.",
+        "Do not abuse the [OC] system",
+        "Not relevant to the subreddit",
+        "No AI or template comics"
+      ],
+      "tone": "humorous",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "links_required",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ",
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "NSFW content",
+        "spam"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "MineralPorn",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/MineralPorn: Welcome to r/MineralPorn, a place for sharing images of beautiful rocks and minerals.",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No ID Requests",
+        "No Sales, Advertising, or Links"
+      ],
+      "tone": "casual",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖"
+      ],
+      "risk_keywords": [
+        "external links",
+        "reposts"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "Palestine",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/Palestine: r/Palestine: a forum for robust discussions encompassing all facets of Palestine, spanning its peopl",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No AI, Low Effort/Quality Post",
+        "No Editorialized Content",
+        "No Zionist Propaganda/Hasbara",
+        "No Trolling/Sealioning",
+        "No Islamophobia, Antisemitism, Nakba denial, Racism, Homophobia or Bigotry"
+      ],
+      "tone": "academic",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "self-promotion",
+        "external links",
+        "memes",
+        "off-topic content"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "chaoticgood",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/chaoticgood: Chaotic Good:  good intentions, questionable methods.",
+      "allowed_topics": [],
+      "banned_topics": [
+        "Do not break Reddit Rules",
+        "No discrimination",
+        "No Spam",
+        "No NSFW / NSFL",
+        "No low effort posts"
+      ],
+      "tone": "supportive",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则"
+      ],
+      "risk_keywords": [
+        "external links",
+        "low-effort content",
+        "political content",
+        "reposts"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "woahdude",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/woahdude: The best links to click while you're stoned!\n\nPsychedelic, mindfucking, mesmerizing, reality-distort",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No TOXIC BEHAVIOR",
+        "No product advertising",
+        "No LOW-EFFORT posts",
+        "No back-seat modding",
+        "XPOST labels are banned"
+      ],
+      "tone": "humorous",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ",
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "external links",
+        "spam",
+        "reposts",
+        "self-promotion",
+        "low-effort content",
+        "NSFW content",
+        "begging/asking"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "logodesign",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/logodesign: A place to discuss logos and their design. Please read the rules of this sub before posting.",
+      "allowed_topics": [],
+      "banned_topics": [],
+      "tone": "casual",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖"
+      ],
+      "risk_keywords": [
+        "external links",
+        "memes",
+        "spam",
+        "self-promotion",
+        "low-effort content",
+        "begging/asking"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "wildlifephotography",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/wildlifephotography: A subreddit for those interested in shooting wildlife...with a camera.",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No Excessive Self-promotion",
+        "Non-Wildlife or Photography  Related",
+        "No spam"
+      ],
+      "tone": "supportive",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖"
+      ],
+      "risk_keywords": [
+        "NSFW content",
+        "spam"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "mildlyinfuriating",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/mildlyinfuriating: jugkfmghgug",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No memes, overdone references, price complaints, text-heavy posts, or other low-quality posts.  ",
+        "No Reddit meta posts.",
+        "No reposts under 6 months or crossposts unless it's OC.",
+        "No politics, pushing agendas, or grandstanding. ",
+        "No promotions."
+      ],
+      "tone": "humorous",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": false,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [],
+      "newcomer_tips": [
+        "先潜水观察社区氛围再发帖"
+      ],
+      "risk_keywords": [
+        "memes"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "HistoryMemes",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/HistoryMemes: A place for history memes about events occurring over 20 years ago.",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No Reposts",
+        "Banned Memes and Formats",
+        "Genocide and Atrocity Denial",
+        "No Brigading",
+        "No 1900's onwards on weekends"
+      ],
+      "tone": "humorous",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "links_required",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ",
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "political content",
+        "external links",
+        "memes",
+        "reposts",
+        "low-effort content",
+        "begging/asking"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "keto",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/keto: The Ketogenic Diet is a low carbohydrate method of eating. /r/keto is place to share thoughts, ideas",
+      "allowed_topics": [],
+      "banned_topics": [
+        "No Cheat Posts",
+        "No Low Effort Posts",
+        "No Self Promotion/Spam",
+        "No Giving or Soliciting Medical Advice"
+      ],
+      "tone": "academic",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ",
+        "忘记选择 flair",
+        "重复提问已有答案的问题"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则",
+        "发帖时选择正确的 flair",
+        "发帖前搜索是否已有类似讨论"
+      ],
+      "risk_keywords": [
+        "external links",
+        "memes",
+        "affiliate links",
+        "self-promotion",
+        "low-effort content",
+        "off-topic content"
+      ],
+      "safe_alternatives": {}
+    }
+  },
+  {
+    "community": "linux",
+    "distilled_at": "2026-05-09",
+    "method": "rule_based",
+    "posting_guide": {
+      "summary": "r/linux: Welcome to /r/Linux!\n\nThis is a community for sharing news about Linux, interesting developments and",
+      "allowed_topics": [],
+      "banned_topics": [
+        "r/linux is not a support forum",
+        "No spamblog submissions",
+        "No memes, image macros, rage comics, overdone jokes",
+        "No misdirected links, login website, url shortener, and certain social media",
+        "Non-useful Image Upload"
+      ],
+      "tone": "professional",
+      "formatting": {
+        "title_rules": "",
+        "flair_required": true,
+        "link_policy": "neutral",
+        "image_policy": ""
+      },
+      "common_mistakes": [
+        "没有先读 FAQ",
+        "忘记选择 flair"
+      ],
+      "newcomer_tips": [
+        "发帖前先读 FAQ 和社区规则",
+        "发帖时选择正确的 flair"
+      ],
+      "risk_keywords": [
+        "external links",
+        "memes",
+        "spam",
+        "low-effort content",
+        "NSFW content"
+      ],
+      "safe_alternatives": {}
+    }
+  }
+]

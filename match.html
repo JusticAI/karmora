@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能匹配 — Karmora</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --orange: #FF4500; --orange-dark: #E03D00; --dark: #1A1A1B; --gray: #787C7E; --light-gray: #F6F7F8; --white: #FFFFFF; --green: #46D160; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; color: var(--dark); line-height: 1.6; background: var(--white); padding-top: 64px; }
+        .beta-banner { background: linear-gradient(135deg, #FFF0EB 0%, #FFE4D6 100%); border-bottom: 1px solid #FFD6C2; padding: 12px 24px; text-align: center; font-size: 14px; font-weight: 600; color: var(--orange-dark); position: relative; z-index: 99; }
+        .beta-banner .badge { display: inline-block; background: var(--orange); color: white; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+        .beta-banner .note { font-weight: 400; color: var(--gray); margin-left: 4px; }
+        nav { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #EDEFF1; z-index: 100; padding: 0 24px; }
+        .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: var(--orange); text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .nav-links { display: flex; gap: 8px; margin-right: auto; margin-left: 40px; }
+        .nav-link { padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 600; color: var(--gray); text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+        .nav-link:hover { color: var(--dark); background: var(--light-gray); }
+        .nav-link.active { color: var(--orange); background: #FFF0EB; border-color: #FFD6C2; }
+        .page { padding: 100px 24px 80px; max-width: 800px; margin: 0 auto; }
+        .page-title { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+        .page-sub { font-size: 18px; color: var(--gray); margin-bottom: 40px; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+        .input-field { width: 100%; padding: 14px 16px; border: 2px solid #EDEFF1; border-radius: 10px; font-size: 15px; outline: none; font-family: inherit; }
+        .input-field:focus { border-color: var(--orange); }
+
+        .match-btn { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 32px; }
+        .match-btn:hover { background: var(--orange-dark); }
+        .match-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        .result-area { display: none; }
+        .result-header { margin-bottom: 24px; }
+        .result-header h2 { font-size: 20px; margin-bottom: 8px; }
+        .result-header p { color: var(--gray); font-size: 14px; }
+
+        .match-card { background: white; border: 1px solid #EDEFF1; border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: all 0.2s; }
+        .match-card:hover { border-color: var(--orange); box-shadow: 0 4px 16px rgba(255,69,0,0.1); }
+        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .match-name { font-weight: 700; font-size: 18px; color: var(--orange); }
+        .match-score { background: var(--orange); color: white; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; }
+        .match-title { font-size: 13px; color: var(--gray); margin-bottom: 8px; }
+        .match-desc { font-size: 14px; margin-bottom: 12px; line-height: 1.5; }
+        .match-stats { display: flex; gap: 16px; font-size: 13px; }
+        .match-stats span { font-weight: 600; }
+        .match-stats .sub { color: var(--green); }
+        .match-stats .active { color: var(--orange); }
+        .match-stats .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .match-reason { margin-top: 10px; padding: 8px 12px; background: #E3F2FD; border-radius: 6px; font-size: 13px; color: #1565C0; }
+
+        .examples { margin-bottom: 24px; }
+        .example-btn { padding: 8px 16px; border: 1px solid #EDEFF1; border-radius: 8px; background: white; font-size: 13px; cursor: pointer; margin-right: 8px; margin-bottom: 8px; }
+        .example-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+        footer { text-align: center; padding: 40px 24px; color: var(--gray); font-size: 14px; border-top: 1px solid #EDEFF1; }
+    </style>
+</head>
+<body>
+<script>
+    if (localStorage.getItem("karmora_unlocked") !== "true") {
+        window.location.href = "index.html";
+    }
+</script>
+<div class="beta-banner"><span class="badge">Beta</span>内测期：所有功能限时免费<span class="note"> — 内测结束后将转为会员制收费模式</span></div>
+<nav>
+    <div class="nav-inner">
+        <a href="index.html" class="logo"><div class="logo-icon">K</div>Karmora</a>
+        <div class="nav-links">
+            <a href="communities.html" class="nav-link">社区数据库</a>
+            <a href="match.html" class="nav-link active">智能匹配</a>
+            <a href="assistant.html" class="nav-link">规则检查</a>
+        </div>
+        <div class="nav-right" style="display:flex;align-items:center;gap:12px;">
+            <span id="userEmail" style="font-size:13px;color:#787C7E;"></span>
+            <a href="#" onclick="logout()" class="nav-link" style="font-size:13px;color:#FF585B;">退出</a>
+        </div>
+    </div>
+</nav>
+<script>
+try{const u=JSON.parse(localStorage.getItem('karmora_user')||'{}');if(u.email)document.getElementById('userEmail').textContent=u.email;}catch(e){}
+function logout(){localStorage.removeItem('karmora_user');localStorage.removeItem('karmora_unlocked');sessionStorage.removeItem('karmora_user');window.location.href='/login.html';}
+</script>
+
+<div class="page">
+    <h1 class="page-title">🎯 智能匹配</h1>
+    <p class="page-sub">描述你想做的事，系统从 5,539 个社区中找到最适合你的</p>
+
+    <div class="examples">
+        <span style="font-size:13px;color:var(--gray);margin-right:8px;">试试：</span>
+        <button class="example-btn" onclick="fillExample(this)">推广我的 Shopify 插件</button>
+        <button class="example-btn" onclick="fillExample(this)">分享编程学习经验</button>
+        <button class="example-btn" onclick="fillExample(this)">找健身讨论社区</button>
+        <button class="example-btn" onclick="fillExample(this)">推广我的 AI 工具</button>
+        <button class="example-btn" onclick="fillExample(this)">分享旅游攻略</button>
+    </div>
+
+    <div class="input-group">
+        <label class="input-label">你想做什么？</label>
+        <input type="text" class="input-field" id="intentInput" placeholder="例如：我想推广我的电商工具，或者分享编程经验...">
+    </div>
+
+    <button class="match-btn" id="matchBtn" onclick="doMatch()">🔍 开始匹配</button>
+
+    <div id="resultArea" class="result-area">
+        <div class="result-header">
+            <h2 id="resultTitle">匹配结果</h2>
+            <p id="resultDesc"></p>
+        </div>
+        <div id="resultList"></div>
+    </div>
+</div>
+
+<footer>Karmora © 2026 · 帮你安全度过 Reddit 冷启动期</footer>
+
+<script src="js/data.js"></script>
+<script>
+function fillExample(btn) {
+    document.getElementById('intentInput').value = btn.textContent;
+    doMatch();
+}
+
+function formatNum(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n;
+}
+
+const BADGE_LABELS = { excellent: '⭐ 推荐', good: '✅ 良好', fair: '⚠️ 一般', low: '💤 低活' };
+
+// Intent → keyword mapping
+const INTENT_MAP = {
+    '推广': { categories: ['marketing', 'ecommerce', 'tech'], keywords: ['launch', 'show', 'feedback', 'roast', 'startup', 'indie', 'sideproject'], avoid: ['spam', 'self-promo'] },
+    '电商': { categories: ['ecommerce', 'marketing'], keywords: ['ecommerce', 'dropship', 'shopify', 'amazon', 'seller', 'fba', 'online store'] },
+    '编程': { categories: ['tech'], keywords: ['programming', 'coding', 'learn', 'developer', 'webdev', 'javascript', 'python'] },
+    '学习': { categories: ['tech', 'science', 'career'], keywords: ['learn', 'study', 'education', 'course', 'tutorial', 'beginner'] },
+    '健身': { categories: ['lifestyle'], keywords: ['fitness', 'gym', 'workout', 'bodybuilding', 'running', 'weight'] },
+    '旅游': { categories: ['lifestyle'], keywords: ['travel', 'backpacking', 'solotravel', 'digital nomad', 'destination'] },
+    '游戏': { categories: ['gaming'], keywords: ['gaming', 'game', 'esports', 'streamer'] },
+    '投资': { categories: ['crypto_finance'], keywords: ['investing', 'stocks', 'crypto', 'trading', 'finance', 'portfolio'] },
+    'AI': { categories: ['tech'], keywords: ['artificial intelligence', 'machine learning', 'chatgpt', 'openai', 'llm', 'ai'] },
+    '工具': { categories: ['tech', 'marketing'], keywords: ['tool', 'saas', 'app', 'product', 'indie', 'sideproject'] },
+    '分享': { categories: ['general', 'social'], keywords: ['share', 'story', 'experience', 'advice', 'tips'] },
+    '内容': { categories: ['marketing', 'creative'], keywords: ['content', 'creator', 'blog', 'youtube', 'writing'] },
+    '设计': { categories: ['creative', 'tech'], keywords: ['design', 'ui', 'ux', 'graphic', 'figma'] },
+    '音乐': { categories: ['entertainment', 'creative'], keywords: ['music', 'producer', 'band', 'song', 'audio'] },
+    '美食': { categories: ['lifestyle'], keywords: ['cooking', 'food', 'recipe', 'chef', 'baking'] },
+};
+
+function extractIntent(text) {
+    const lower = text.toLowerCase();
+    const matched = [];
+    for (const [key, config] of Object.entries(INTENT_MAP)) {
+        if (lower.includes(key.toLowerCase())) {
+            matched.push(config);
+        }
+    }
+    // Also extract individual words as keywords
+    const words = lower.split(/[\s，。、,.]+/).filter(w => w.length > 1);
+    return { matched, words };
+}
+
+function scoreCommunity(c, intent) {
+    let score = 0;
+    const name = (c.name || '').toLowerCase();
+    const title = (c.title || '').toLowerCase();
+    const desc = (c.desc || '').toLowerCase();
+    const text = `${name} ${title} ${desc}`;
+    const reasons = [];
+
+    // Category match
+    for (const config of intent.matched) {
+        if (config.categories.includes(c.category)) {
+            score += 30;
+            reasons.push('分类匹配');
+        }
+    }
+
+    // Keyword match
+    for (const config of intent.matched) {
+        for (const kw of config.keywords) {
+            if (text.includes(kw.toLowerCase())) {
+                score += 20;
+                reasons.push(`关键词: ${kw}`);
+            }
+        }
+    }
+
+    // Word match
+    for (const word of intent.words) {
+        if (word.length > 2 && text.includes(word)) {
+            score += 10;
+        }
+    }
+
+    // Bonus for good communities
+    if (c.badge === 'excellent') score += 15;
+    else if (c.badge === 'good') score += 8;
+
+    // Bonus for reasonable size (not too small, not too big)
+    if (c.subscribers >= 10000 && c.subscribers <= 500000) score += 10;
+
+    // Penalty for NSFW
+    if (c.over18) score -= 50;
+
+    // Penalty for very low activity
+    if (c.badge === 'low') score -= 10;
+
+    return { score, reasons: [...new Set(reasons)].slice(0, 3) };
+}
+
+function doMatch() {
+    const input = document.getElementById('intentInput').value.trim();
+    if (!input) { alert('请描述你想做的事'); return; }
+
+    const btn = document.getElementById('matchBtn');
+    btn.disabled = true;
+    btn.textContent = '🔍 匹配中...';
+
+    setTimeout(() => {
+        const intent = extractIntent(input);
+        const scored = (COMMUNITIES || [])
+            .filter(c => !c.over18)
+            .map(c => ({ ...c, ...scoreCommunity(c, intent) }))
+            .filter(c => c.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+
+        const area = document.getElementById('resultArea');
+        const list = document.getElementById('resultList');
+        document.getElementById('resultTitle').textContent = `为你找到 ${scored.length} 个匹配社区`;
+        document.getElementById('resultDesc').textContent = `基于「${input}」的意图分析，从 5,539 个社区中筛选`;
+
+        list.innerHTML = scored.map((c, i) => `
+            <div class="match-card">
+                <div class="match-header">
+                    <span class="match-name">#${i + 1} r/${c.name}</span>
+                    <span class="match-score">匹配度 ${c.score}</span>
+                </div>
+                <div class="match-title">${c.title || ''}</div>
+                <div class="match-desc">${c.desc || '暂无描述'}</div>
+                <div class="match-stats">
+                    <span class="sub">👥 ${formatNum(c.subscribers)} 订阅</span>
+                    <span class="active">🔥 ${formatNum(c.active_users)} 活跃</span>
+                    <span class="badge badge-${c.badge}">${BADGE_LABELS[c.badge]}</span>
+                </div>
+                ${c.reasons.length > 0 ? `<div class="match-reason">💡 匹配原因：${c.reasons.join('、')}</div>` : ''}
+            </div>
+        `).join('');
+
+        area.style.display = 'block';
+        area.scrollIntoView({ behavior: 'smooth' });
+
+        btn.disabled = false;
+        btn.textContent = '🔍 开始匹配';
+    }, 200);
+}
+
+// Enter key
+document.getElementById('intentInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doMatch();
+});
+</script>
+</body>
+</html>

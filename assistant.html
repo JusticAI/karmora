@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>规则检查器 — Karmora</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --orange: #FF4500; --orange-dark: #E03D00; --dark: #1A1A1B; --gray: #787C7E; --light-gray: #F6F7F8; --white: #FFFFFF; --green: #46D160; --red: #FF585B; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; color: var(--dark); line-height: 1.6; background: var(--white); padding-top: 64px; }
+        .beta-banner { background: linear-gradient(135deg, #FFF0EB 0%, #FFE4D6 100%); border-bottom: 1px solid #FFD6C2; padding: 12px 24px; text-align: center; font-size: 14px; font-weight: 600; color: var(--orange-dark); position: relative; z-index: 99; }
+        .beta-banner .badge { display: inline-block; background: var(--orange); color: white; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+        .beta-banner .note { font-weight: 400; color: var(--gray); margin-left: 4px; }
+        nav { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #EDEFF1; z-index: 100; padding: 0 24px; }
+        .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: var(--orange); text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .nav-links { display: flex; gap: 8px; margin-right: auto; margin-left: 40px; }
+        .nav-link { padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 600; color: var(--gray); text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+        .nav-link:hover { color: var(--dark); background: var(--light-gray); }
+        .nav-link.active { color: var(--orange); background: #FFF0EB; border-color: #FFD6C2; }
+
+        .page { padding: 100px 24px 80px; max-width: 800px; margin: 0 auto; }
+        .page-title { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+        .page-sub { font-size: 18px; color: var(--gray); margin-bottom: 40px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+        .form-select, .form-textarea { width: 100%; padding: 12px 16px; border: 2px solid #EDEFF1; border-radius: 10px; font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.2s; }
+        .form-select:focus, .form-textarea:focus { border-color: var(--orange); }
+        .form-textarea { min-height: 160px; resize: vertical; }
+        .check-btn { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 32px; }
+        .check-btn:hover { background: var(--orange-dark); }
+        .check-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        .result-area { display: none; }
+        .result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .score-circle { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: white; flex-shrink: 0; }
+        .score-safe { background: var(--green); }
+        .score-warn { background: #FF9800; }
+        .score-danger { background: var(--red); }
+        .score-info { font-size: 14px; }
+        .score-info .big { font-size: 20px; font-weight: 800; }
+
+        .rules-list { margin-bottom: 24px; }
+        .rule-card { background: white; border: 1px solid #EDEFF1; border-radius: 10px; padding: 16px; margin-bottom: 12px; transition: all 0.2s; }
+        .rule-card:hover { border-color: var(--orange); }
+        .rule-card.danger { border-left: 4px solid var(--red); }
+        .rule-card.warning { border-left: 4px solid #FF9800; }
+        .rule-card.info { border-left: 4px solid var(--green); }
+        .rule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .rule-name { font-weight: 700; font-size: 14px; }
+        .rule-severity { font-size: 11px; padding: 2px 10px; border-radius: 9999px; font-weight: 700; }
+        .severity-ban { background: #FFEBEE; color: #C62828; }
+        .severity-warning { background: #FFF3E0; color: #E65100; }
+        .severity-info { background: #E8F5E9; color: #2E7D32; }
+        .rule-desc { font-size: 13px; color: var(--gray); margin-bottom: 8px; }
+        .rule-match { font-size: 12px; color: var(--red); background: #FFF0F0; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
+        .rule-fix { font-size: 13px; color: #1565C0; background: #E3F2FD; padding: 8px 12px; border-radius: 6px; }
+        .rule-fix::before { content: '💡 '; }
+
+        .community-rules { background: var(--light-gray); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+        .community-rules h3 { font-size: 14px; margin-bottom: 12px; color: var(--orange); }
+        .community-rule-item { font-size: 13px; padding: 8px 0; border-bottom: 1px solid #EDEFF1; }
+        .community-rule-item:last-child { border-bottom: none; }
+        .community-rule-item .rname { font-weight: 700; }
+
+        .safe-msg { text-align: center; padding: 40px; }
+        .safe-msg .icon { font-size: 48px; margin-bottom: 12px; }
+        .safe-msg .text { font-size: 18px; font-weight: 700; color: var(--green); }
+        .safe-msg .sub { font-size: 14px; color: var(--gray); margin-top: 8px; }
+
+        footer { text-align: center; padding: 40px 24px; color: var(--gray); font-size: 14px; border-top: 1px solid #EDEFF1; }
+    </style>
+</head>
+<body>
+<script>
+    if (localStorage.getItem("karmora_unlocked") !== "true") {
+        window.location.href = "index.html";
+    }
+</script>
+<div class="beta-banner"><span class="badge">Beta</span>内测期：所有功能限时免费<span class="note"> — 内测结束后将转为会员制收费模式</span></div>
+<nav>
+    <div class="nav-inner">
+        <a href="index.html" class="logo"><div class="logo-icon">K</div>Karmora</a>
+        <div class="nav-links">
+            <a href="communities.html" class="nav-link">社区数据库</a>
+            <a href="match.html" class="nav-link">智能匹配</a>
+            <a href="assistant.html" class="nav-link active">AI 助手</a>
+        </div>
+        <div class="nav-right" style="display:flex;align-items:center;gap:12px;">
+            <span id="userEmail" style="font-size:13px;color:#787C7E;"></span>
+            <a href="#" onclick="logout()" class="nav-link" style="font-size:13px;color:#FF585B;">退出</a>
+        </div>
+    </div>
+</nav>
+<script>
+try{const u=JSON.parse(localStorage.getItem('karmora_user')||'{}');if(u.email)document.getElementById('userEmail').textContent=u.email;}catch(e){}
+function logout(){localStorage.removeItem('karmora_user');localStorage.removeItem('karmora_unlocked');sessionStorage.removeItem('karmora_user');window.location.href='/login.html';}
+</script>
+
+<div class="page">
+    <h1 class="page-title">🛡️ 规则检查器</h1>
+    <p class="page-sub">粘贴你的帖子内容，检查是否违反目标社区规则，获取规避建议</p>
+
+    <div class="form-group">
+        <label class="form-label">选择目标社区</label>
+        <input type="text" class="form-select" id="subreddit-search" placeholder="输入社区名称搜索..." autocomplete="off">
+        <input type="hidden" id="subreddit-value">
+        <div id="subreddit-dropdown" style="display:none;max-height:200px;overflow-y:auto;border:1px solid #EDEFF1;border-radius:8px;margin-top:4px;"></div>
+    </div>
+
+    <div id="rules-preview" class="community-rules" style="display:none;">
+        <h3>📋 该社区已知规则</h3>
+        <div id="rules-preview-list"></div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">粘贴你的帖子内容（英文）</label>
+        <textarea class="form-textarea" id="content-input" placeholder="Paste your Reddit post or comment here...&#10;&#10;支持标题+正文一起粘贴，系统会自动分析。"></textarea>
+    </div>
+
+    <button class="check-btn" id="check-btn">🔍 检查规则风险</button>
+
+    <div id="result-area" class="result-area">
+        <div id="result-content"></div>
+    </div>
+</div>
+
+<footer>Karmora © 2026 · 帮你安全度过 Reddit 冷启动期</footer>
+
+<script src="js/data.js"></script>
+<script>
+// === Searchable subreddit selector ===
+const searchInput = document.getElementById('subreddit-search');
+const hiddenInput = document.getElementById('subreddit-value');
+const dropdown = document.getElementById('subreddit-dropdown');
+
+searchInput.addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    hiddenInput.value = '';
+    if (q.length < 1) { dropdown.style.display = 'none'; return; }
+    const matches = (COMMUNITIES || []).filter(c =>
+        c.name.toLowerCase().includes(q) || (c.title || '').toLowerCase().includes(q)
+    ).slice(0, 20);
+    if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = matches.map(c =>
+        `<div style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #F0F0F0;" onmouseover="this.style.background='#FFF0EB'" onmouseout="this.style.background='white'" onclick="selectSub('${c.name}')">r/${c.name} <span style="color:#999;">${c.title || ''}</span></div>`
+    ).join('');
+    dropdown.style.display = 'block';
+});
+
+function selectSub(name) {
+    searchInput.value = `r/${name}`;
+    hiddenInput.value = name;
+    dropdown.style.display = 'none';
+    // Show rules preview
+    showRulesPreview(name);
+}
+
+searchInput.addEventListener('blur', () => {
+    setTimeout(() => { dropdown.style.display = 'none'; }, 200);
+});
+
+function showRulesPreview(sub) {
+    const preview = document.getElementById('rules-preview');
+    const list = document.getElementById('rules-preview-list');
+    const community = (COMMUNITIES || []).find(c => c.name === sub);
+    if (community && community.rules && community.rules.length > 0) {
+        list.innerHTML = community.rules.map(r => {
+            const sev = r.severity === 'ban' ? '🚫' : r.severity === 'warning' ? '⚠️' : 'ℹ️';
+            return `<div class="community-rule-item">${sev} <span class="rname">${r.name}</span>${r.desc ? ': ' + r.desc : ''}</div>`;
+        }).join('');
+        preview.style.display = 'block';
+    } else {
+        list.innerHTML = '<div class="community-rule-item" style="color:#999;">该社区暂无详细规则数据，检查将基于通用规则</div>';
+        preview.style.display = 'block';
+    }
+}
+
+// Old select handler - now handled by search
+
+// === Rule checking engine ===
+
+// Common Reddit-wide violation patterns
+const GLOBAL_PATTERNS = [
+    { pattern: /https?:\/\/[^\s]+/gi, name: '包含链接', severity: 'warning',
+      desc: '新号发链接极易被自动过滤或标记为 spam',
+      fix: '建议先不带链接发帖，等获得一定互动后再在评论中补充链接' },
+    { pattern: /\b(buy|shop|order|discount|coupon|promo|sale|deal|off)\b/gi, name: '疑似促销/广告词汇', severity: 'warning',
+      desc: '含有购物/促销相关词汇，容易被判定为广告',
+      fix: '用经验分享的口吻替代推销语气，如 "I found this helpful" 而非 "You should buy this"' },
+    { pattern: /\b(check out|visit|sign up|subscribe|download|free trial)\b/gi, name: '行动号召 (CTA)', severity: 'warning',
+      desc: '直接号召用户行动，容易被视为推广',
+      fix: '去掉 CTA，让用户自然提问或在评论区补充' },
+    { pattern: /\b(dm me|message me|pm me|contact me|reach out)\b/gi, name: '引导私信', severity: 'warning',
+      desc: '引导用户私信可能被视为规避社区监督',
+      fix: '在公开评论中回答问题，保持透明度' },
+    { pattern: /\b(affiliate|referral|commission|earn money|passive income|side hustle income)\b/gi, name: '联盟营销/返佣词汇', severity: 'ban',
+      desc: '提及联盟营销或返佣，多数社区直接删帖',
+      fix: '完全删除任何与佣金/返利相关的内容' },
+    { pattern: /\b(upvote|karma|please upvote|help me reach)\b/gi, name: '索要 upvote', severity: 'ban',
+      desc: '索要 upvote 违反 Reddit 全站规则',
+      fix: '删除所有请求 upvote 的内容，让内容质量自己说话' },
+    { pattern: /\b(i made|i built|i created|my tool|my app|my product|my startup)\b/gi, name: '自我推广嫌疑', severity: 'warning',
+      desc: '直接说"我做了XX"容易被视为 self-promotion',
+      fix: '改为第三人称或经验分享角度，如 "I came across this approach" 或 "Here\'s what worked for me"' },
+    { pattern: /\b(first time|new here|new to reddit|my first post)\b/gi, name: '暴露新手身份', severity: 'info',
+      desc: '暴露新手身份可能让部分用户更严格审视你的内容',
+      fix: '不需要特别说明自己是新手，直接分享有价值的内容即可' },
+];
+
+// Community-specific rules from data.js
+function getCommunityRules(subName) {
+    if (typeof COMMUNITIES === 'undefined') return [];
+    const community = COMMUNITIES.find(c => c.name === subName);
+    if (!community || !community.rules) return [];
+    return community.rules.map(r => ({
+        name: r.name,
+        severity: r.severity || 'warning',
+        desc: r.desc || '',
+        keywords: r.keywords || [],
+        fix: generateFix(r)
+    }));
+}
+
+function generateFix(rule) {
+    const name = (rule.name || '').toLowerCase();
+    if (name.includes('no promo') || name.includes('no spam') || name.includes('no self-promo'))
+        return '删除所有产品链接和推广内容，仅分享经验和知识';
+    if (name.includes('no link') || name.includes('no url'))
+        return '移除帖子中的所有链接，在评论区自然提及';
+    if (name.includes('karma') || name.includes('account age'))
+        return '先在其他社区积累 karma，达到要求后再发帖';
+    if (name.includes('no meme') || name.includes('no low'))
+        return '提高内容质量，添加详细的文字说明';
+    if (name.includes('title'))
+        return '修改标题，确保简洁且符合社区标题规范';
+    if (name.includes('flair'))
+        return '发帖时选择正确的 flair（标签）';
+    if (name.includes('repost') || name.includes('duplicate'))
+        return '搜索社区确认没有类似帖子后再发';
+    return '仔细阅读该社区规则，调整内容以符合要求';
+}
+
+// Check content against rules
+function checkContent(subName, content) {
+    const issues = [];
+    const lowerContent = content.toLowerCase();
+
+    // Check global patterns
+    GLOBAL_PATTERNS.forEach(p => {
+        const matches = content.match(p.pattern);
+        if (matches) {
+            issues.push({
+                name: p.name,
+                severity: p.severity,
+                desc: p.desc,
+                matches: [...new Set(matches.map(m => m.length > 60 ? m.substring(0, 60) + '...' : m))].slice(0, 3),
+                fix: p.fix,
+                source: 'global'
+            });
+        }
+    });
+
+    // Check community-specific rules
+    const communityRules = getCommunityRules(subName);
+    communityRules.forEach(rule => {
+        // Check keywords
+        if (rule.keywords && rule.keywords.length > 0) {
+            const matched = rule.keywords.filter(kw => lowerContent.includes(kw.toLowerCase()));
+            if (matched.length > 0) {
+                issues.push({
+                    name: `社区规则: ${rule.name}`,
+                    severity: rule.severity,
+                    desc: rule.desc,
+                    matches: matched,
+                    fix: rule.fix,
+                    source: 'community'
+                });
+            }
+        }
+    });
+
+    // Sort: ban > warning > info
+    const order = { ban: 0, warning: 1, info: 2 };
+    issues.sort((a, b) => (order[a.severity] || 9) - (order[b.severity] || 9));
+
+    return issues;
+}
+
+// Calculate safety score (0-100, higher = safer)
+function calcScore(issues) {
+    let score = 100;
+    issues.forEach(i => {
+        if (i.severity === 'ban') score -= 25;
+        else if (i.severity === 'warning') score -= 15;
+        else score -= 5;
+    });
+    return Math.max(0, score);
+}
+
+// === Render results ===
+function renderResults(subName, content, issues) {
+    const area = document.getElementById('result-area');
+    const resultContent = document.getElementById('result-content');
+    area.style.display = 'block';
+
+    if (issues.length === 0) {
+        resultContent.innerHTML = `
+            <div class="safe-msg">
+                <div class="icon">✅</div>
+                <div class="text">未检测到明显风险</div>
+                <div class="sub">内容看起来安全，但仍建议手动检查社区最新规则</div>
+            </div>`;
+        return;
+    }
+
+    const score = calcScore(issues);
+    const scoreClass = score >= 70 ? 'score-safe' : score >= 40 ? 'score-warn' : 'score-danger';
+    const scoreText = score >= 70 ? '低风险' : score >= 40 ? '中风险' : '高风险';
+    const banCount = issues.filter(i => i.severity === 'ban').length;
+    const warnCount = issues.filter(i => i.severity === 'warning').length;
+
+    let html = `
+        <div class="result-header">
+            <div class="score-circle ${scoreClass}">${score}</div>
+            <div class="score-info">
+                <div class="big">${scoreText}</div>
+                <div>发现 ${issues.length} 个风险点${banCount > 0 ? `（<span style="color:#C62828">${banCount} 个严重</span>）` : ''}${warnCount > 0 ? `（<span style="color:#E65100">${warnCount} 个警告</span>）` : ''}</div>
+            </div>
+        </div>
+        <div class="rules-list">`;
+
+    issues.forEach(issue => {
+        const sevClass = issue.severity === 'ban' ? 'danger' : issue.severity === 'warning' ? 'warning' : 'info';
+        const sevLabel = issue.severity === 'ban' ? '🚫 严重' : issue.severity === 'warning' ? '⚠️ 警告' : 'ℹ️ 提示';
+        const sevBadgeClass = issue.severity === 'ban' ? 'severity-ban' : issue.severity === 'warning' ? 'severity-warning' : 'severity-info';
+
+        html += `
+            <div class="rule-card ${sevClass}">
+                <div class="rule-header">
+                    <span class="rule-name">${issue.name}</span>
+                    <span class="rule-severity ${sevBadgeClass}">${sevLabel}</span>
+                </div>
+                <div class="rule-desc">${issue.desc}</div>`;
+
+        if (issue.matches && issue.matches.length > 0) {
+            html += `<div class="rule-match">🔍 匹配内容：${issue.matches.map(m => `<code>"${m}"</code>`).join('、')}</div>`;
+        }
+
+        html += `<div class="rule-fix">${issue.fix}</div>
+            </div>`;
+    });
+
+    html += '</div>';
+    resultContent.innerHTML = html;
+    resultContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// === Main check button ===
+document.getElementById('check-btn').addEventListener('click', () => {
+    const sub = document.getElementById('subreddit-value').value || document.getElementById('subreddit-search').value.replace('r/', '').trim();
+    const content = document.getElementById('content-input').value.trim();
+
+    if (!sub) { alert('请先选择目标社区'); return; }
+    if (!content) { alert('请粘贴要检查的内容'); return; }
+
+    const btn = document.getElementById('check-btn');
+    btn.disabled = true;
+    btn.textContent = '🔍 检查中...';
+
+    // Simulate brief processing
+    setTimeout(() => {
+        const issues = checkContent(sub, content);
+        renderResults(sub, content, issues);
+        btn.disabled = false;
+        btn.textContent = '🔍 检查规则风险';
+    }, 300);
+});
+</script>
+</body>
+</html>

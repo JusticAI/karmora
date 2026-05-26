@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karmora — Reddit Karma 策略平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --orange: #FF4500;
+            --orange-dark: #E03D00;
+            --dark: #1A1A1B;
+            --gray: #787C7E;
+            --light-gray: #F6F7F8;
+            --white: #FFFFFF;
+            --green: #46D160;
+            --red: #FF585B;
+            --bg: #FAFBFC;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            color: var(--dark);
+            line-height: 1.6;
+            background: var(--bg);
+        }
+
+        /* ===== NAV ===== */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #E8EAED; z-index: 100;
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1100px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+            height: 64px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 22px; font-weight: 800; color: var(--orange); text-decoration: none;
+        }
+        .logo-icon {
+            width: 36px; height: 36px; background: var(--orange); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;
+        }
+        .nav-links { display: flex; gap: 8px; margin-right: auto; margin-left: 40px; }
+        .nav-link {
+            padding: 6px 16px; border-radius: 9999px; font-size: 14px; font-weight: 600;
+            color: var(--gray); text-decoration: none; transition: all 0.2s;
+        }
+        .nav-link:hover { color: var(--dark); background: var(--light-gray); }
+        .nav-cta {
+            background: var(--orange); color: white; border: none;
+            padding: 10px 24px; border-radius: 9999px;
+            font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none;
+            transition: background 0.2s;
+        }
+        .nav-cta:hover { background: var(--orange-dark); }
+
+        /* ===== BETA BANNER ===== */
+        .beta-banner {
+            background: linear-gradient(135deg, #FFF0EB 0%, #FFE4D6 100%);
+            border-bottom: 1px solid #FFD6C2;
+            padding: 12px 24px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--orange-dark);
+            display: none;
+            position: relative;
+        }
+        .beta-banner.show { display: block; }
+        .beta-banner .badge {
+            display: inline-block;
+            background: var(--orange);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .beta-banner .note {
+            font-weight: 400;
+            color: var(--gray);
+            margin-left: 4px;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 140px 24px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center; gap: 6px;
+            background: #FFF0EB;
+            color: var(--orange-dark);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border: 1px solid #FFD6C2;
+        }
+        .hero-badge .dot {
+            width: 6px; height: 6px;
+            background: var(--orange);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--orange) 0%, #FF6B35 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 20px;
+            color: var(--gray);
+            max-width: 640px;
+            margin: 0 auto 12px;
+        }
+        .hero .sub-highlight {
+            font-size: 15px;
+            color: var(--orange);
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+        .hero .sub-highlight span {
+            display: inline-block;
+            background: #FFF0EB;
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+        .hero-actions {
+            display: flex; gap: 16px; justify-content: center;
+            margin-bottom: 48px; flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: var(--orange); color: white; border: none;
+            padding: 14px 36px; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { background: var(--orange-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,69,0,0.3); }
+        .btn-secondary {
+            background: white; color: var(--dark); border: 2px solid #DDE0E4;
+            padding: 14px 36px; border-radius: 12px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+        }
+        .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 48px;
+            flex-wrap: wrap;
+        }
+        .hero-stat { text-align: center; }
+        .hero-stat .num {
+            font-size: 32px; font-weight: 900; color: var(--dark);
+        }
+        .hero-stat .label {
+            font-size: 14px; color: var(--gray); margin-top: 4px;
+        }
+
+        /* ===== URGENCY SECTION ===== */
+        .urgency {
+            background: linear-gradient(135deg, #FFF5F2 0%, #FFEDE6 100%);
+            padding: 72px 24px;
+            text-align: center;
+            border-top: 1px solid #FFD6C2;
+            border-bottom: 1px solid #FFD6C2;
+        }
+        .urgency-inner {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .urgency h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .urgency p {
+            font-size: 17px;
+            color: var(--gray);
+            margin-bottom: 24px;
+        }
+        .urgency-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            text-align: left;
+        }
+        .urgency-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #FFD6C2;
+        }
+        .urgency-card .icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+        .urgency-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .urgency-card p {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+        .urgency-card .tag {
+            display: inline-block;
+            background: var(--orange);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        .urgency .counter {
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+        .urgency .counter strong {
+            color: var(--orange);
+            font-size: 24px;
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 80px 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .features h2 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 48px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 24px;
+            border: 1px solid #EDEFF1;
+            transition: all 0.2s;
+        }
+        .feature-card:hover {
+            border-color: #FFD6C2;
+            box-shadow: 0 4px 16px rgba(255,69,0,0.08);
+            transform: translateY(-4px);
+        }
+        .feature-card .icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        /* ===== CTA FORM ===== */
+        .cta-section {
+            padding: 80px 24px 100px;
+            background: var(--dark);
+            text-align: center;
+        }
+        .cta-section h2 {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+        }
+        .cta-section p {
+            font-size: 17px;
+            color: #9A9DA0;
+            margin-bottom: 32px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-section .limitation {
+            color: var(--orange);
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .cta-section .limitation::before {
+            content: '⚠ ';
+        }
+        .cta-form {
+            display: flex;
+            gap: 12px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .cta-form input {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 2px solid #3A3A3C;
+            background: #272729;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .cta-form input::placeholder { color: #6A6C6E; }
+        .cta-form input:focus { border-color: var(--orange); }
+        .cta-form button {
+            padding: 14px 28px;
+            border-radius: 12px;
+            background: var(--orange);
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .cta-form button:hover { background: var(--orange-dark); }
+        .cta-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .cta-note {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #6A6C6E;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000;
+            padding: 24px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 48px 40px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal .icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+        .modal h3 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .modal p {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+        .modal .email-display {
+            background: var(--light-gray);
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 24px;
+            word-break: break-all;
+        }
+        .modal .steps {
+            text-align: left;
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .modal .steps li {
+            list-style: none;
+            padding: 6px 0;
+            font-size: 14px;
+            color: var(--gray);
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .modal .steps li .step-num {
+            width: 20px; height: 20px;
+            background: var(--orange); color: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .modal button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: var(--dark);
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .modal button:hover { background: #333; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--gray);
+            border-top: 1px solid #EDEFF1;
+        }
+
+        /* ===== LOGIN ENTRY ===== */
+        .login-entry {
+            max-width: 500px;
+            margin: 120px auto;
+            padding: 24px;
+            text-align: center;
+        }
+        .login-entry h2 { font-size: 28px; margin-bottom: 12px; }
+        .login-entry p { color: var(--gray); margin-bottom: 24px; }
+        .login-btn {
+            padding: 14px 48px;
+            background: var(--orange); color: white;
+            border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .login-btn:hover { background: var(--orange-dark); }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .login-error { color: var(--red); font-size: 14px; margin-top: 12px; display: none; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero h1 { font-size: 36px; }
+            .hero p { font-size: 17px; }
+            .hero-actions { flex-direction: column; align-items: center; }
+            .btn-primary, .btn-secondary { width: 100%; max-width: 300px; justify-content: center; }
+            .hero-stats { gap: 24px; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .urgency-grid { grid-template-columns: 1fr; }
+            .cta-form { flex-direction: column; }
+            .cta-form button { width: 100%; }
+            .modal { padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+<script>
+// 已登录用户直接跳转到功能界面
+if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlocked')) {
+    window.location.href = '/dashboard.html';
+}
+</script>
+
+    <!-- ==================== BETA BANNER ==================== -->
+    <div class="beta-banner" id="betaBanner">
+        <span class="badge">Beta</span>
+        <span id="bannerText">您当前处于 Beta 内测阶段。内测结束后，系统将转为会员制收费模式。</span>
+        <span class="note">— 内测期间所有功能限时免费</span>
+    </div>
+
+    <!-- ==================== NAV ==================== -->
+    <nav>
+        <div class="nav-inner">
+            <a href="/" class="logo">
+                <span class="logo-icon">K</span>
+                Karmora
+            </a>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">功能介绍</a>
+                <a href="#apply" class="nav-link">申请内测</a>
+            </div>
+            <a id="navCta" href="#apply" class="nav-cta">申请内测 →</a>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            内测申请开放中
+        </div>
+        <h1>
+            精准掌控你的
+            <span class="highlight">Reddit Karma</span>
+        </h1>
+        <p>
+            Karmora 通过 5,500+ 社区数据分析，为你推荐最佳发帖时机、社区和内容策略，最大化 Karma 增长效率。
+        </p>
+
+        <div class="hero-actions">
+            <a href="#apply" class="btn-primary">🎟 申请内测名额</a>
+            <a href="#features" class="btn-secondary">了解更多 ↓</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="num">5,539</div>
+                <div class="label">社区分析</div>
+            </div>
+            <div class="hero-stat">
+                <div class="num">116K</div>
+                <div class="label">帖子数据</div>
+            </div>
+            <div class="hero-stat">
+                <div class="num">24h</div>
+                <div class="label">审核时长</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== URGENCY ==================== -->
+    <section class="urgency" id="urgency">
+        <div class="urgency-inner">
+            <h2>🎟 内测名额限时开放</h2>
+            <p>内测期间所有功能免费开放，审核通过后即可解锁全部功能。内测结束后将转为会员制。</p>
+            <div class="urgency-grid">
+                <div class="urgency-card">
+                    <div class="icon">🎁</div>
+                    <h3>终身折扣权益</h3>
+                    <p>内测用户享正式版 7 折，永久有效，不限时长。</p>
+                    <span class="tag">仅限内测</span>
+                </div>
+                <div class="urgency-card">
+                    <div class="icon">⚡</div>
+                    <h3>抢先使用权限</h3>
+                    <p>比全体用户提前 30 天使用新功能，优先反馈权。</p>
+                    <span class="tag">仅限内测</span>
+                </div>
+                <div class="urgency-card">
+                    <div class="icon">🏆</div>
+                    <h3>创始会员标识</h3>
+                    <p>账号获得专属创始会员徽章，社区声望加持。</p>
+                    <span class="tag">仅限内测</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== FEATURES ==================== -->
+    <section class="features" id="features">
+        <h2>核心功能</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h3>社区数据库</h3>
+                <p>5,539 个 Reddit 社区深度数据，29 个分类标签，支持搜索、筛选、排序，一站式掌握社区全貌。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🎯</div>
+                <h3>社区智能匹配</h3>
+                <p>描述你想做的事，系统从 5,539 个社区中智能匹配最适合的，附带匹配度评分和推荐理由。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🛡️</div>
+                <h3>规则风险检查</h3>
+                <p>粘贴帖子内容，自动检测是否违反社区规则，标注风险等级，给出规避建议，避免删帖封号。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h3>社区规则库</h3>
+                <p>5,265 个社区的规则数据全覆盖，版主团队、发帖要求、审核标准一目了然。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔐</div>
+                <h3>隐私安全优先</h3>
+                <p>数据基于公开信息采集，不保存任何 Reddit 凭证，内测期间所有功能免费开放。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA / APPLY ==================== -->
+    <section class="cta-section" id="apply">
+        <div class="limitation">内测名额有限，申请从速</div>
+        <h2>申请内测资格</h2>
+        <p>填写邮箱加入等待列表，审核通过后我们将发送登录链接。</p>
+        <form class="cta-form" id="applyForm" onsubmit="return handleApply(event)">
+            <input type="email" id="applyEmail" placeholder="输入你的邮箱地址" required>
+            <button type="submit" id="applyBtn">提交申请</button>
+        </form>
+        <div class="cta-note">审核通过后将在 24 小时内通过邮件通知。无需创建账户。</div>
+    </section>
+
+    <!-- ==================== MODAL ==================== -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal">
+            <div class="icon">🎉</div>
+            <h3>申请已提交！</h3>
+            <p>我们已收到你的内测申请，审核将在 <strong>24 小时</strong> 内完成。</p>
+            <div class="email-display" id="submittedEmail">example@email.com</div>
+            <ul class="steps">
+                <li><span class="step-num">1</span> 提交邮箱申请内测</li>
+                <li><span class="step-num">2</span> 后台审核（通常 24h）</li>
+                <li><span class="step-num">3</span> 审核通过 → 邮箱收到登录链接</li>
+                <li><span class="step-num">4</span> 点击链接开始使用 Karmora</li>
+            </ul>
+            <button onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <p>© 2026 Karmora — 基于 Reddit 公开数据的 Karma 策略平台</p>
+        <p style="margin-top:8px;color:#9A9DA0;">Karmora 与 Reddit 无关。所有分析基于公开可用数据。</p>
+    </footer>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // ===== HANDLE APPLY (email submit) =====
+        async function handleApply(e) {
+            e.preventDefault();
+            const email = document.getElementById('applyEmail').value.trim();
+            const btn = document.getElementById('applyBtn');
+
+            if (!email || !email.includes('@')) return false;
+
+            btn.disabled = true;
+            btn.textContent = '提交中...';
+
+            try {
+                const res = await fetch(API_BASE + '/api/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                btn.disabled = false;
+                btn.textContent = '提交申请';
+
+                if (res.ok) {
+                    document.getElementById('applyEmail').value = '';
+                    showModal(email, data.message);
+                } else {
+                    showModal(email, data.error || '提交失败，请稍后重试', true);
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = '提交申请';
+                showModal(email, '网络错误，请检查连接后重试', true);
+            }
+
+            return false;
+        }
+
+        function showModal(email, message, isError = false) {
+            document.getElementById('submittedEmail').textContent = email;
+            const modal = document.getElementById('successModal');
+            const icon = modal.querySelector('.icon');
+            const p = modal.querySelector('.modal p');
+            const closeBtn = modal.querySelector('button');
+
+            if (isError) {
+                icon.textContent = '⚠️';
+                closeBtn.style.background = '#787C7E';
+            } else {
+                icon.textContent = '🎉';
+                closeBtn.style.background = '#1A1A1B';
+            }
+            p.innerHTML = message;
+            document.getElementById('successModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('show');
+        }
+
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ===== URL PARAMS — 处理审核通过登录链接 =====
+        // ?login=token 或 ?token=xxx
+        (async function handleLoginLink() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('login') || params.get('token');
+
+            if (!token) return;
+
+            // 显示加载状态
+            const hero = document.querySelector('.hero') || document.body;
+            const loader = document.createElement('div');
+            loader.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#FF4500;';
+            loader.textContent = '正在验证登录...';
+            document.body.appendChild(loader);
+
+            try {
+                const res = await fetch(API_BASE + '/api/verify-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // 登录成功，保存到 localStorage
+                    localStorage.setItem('karmora_user', JSON.stringify({
+                        email: data.email,
+                        status: data.status,
+                        loginAt: new Date().toISOString()
+                    }));
+                    // 清除 URL 参数
+                    window.history.replaceState({}, '', '/');
+                    window.location.href = '/dashboard.html';
+                } else {
+                    loader.remove();
+                    alert(data.error || '登录失败');
+                    window.history.replaceState({}, '', '/');
+                }
+            } catch (err) {
+                loader.remove();
+                alert('网络错误，请稍后重试');
+                window.history.replaceState({}, '', '/');
+            }
+        })();
+
+        // ===== SMOOTH SCROLL =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
