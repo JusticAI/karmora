@@ -2,7 +2,7 @@
 // ⚠️ 部署到 GitHub 后，把下面的 URL 改成你的 GitHub raw 地址
 const KARMORA_CONFIG = {
     // GitHub raw 数据源（改成你的仓库）
-    DATA_BASE: 'https://raw.githubusercontent.com/JusticAI/karmora-data/main',
+    DATA_BASE: 'https://cdn.jsdelivr.net/gh/JusticAI/karmora-data@main',
     
     // 数据文件路径
     get COMMUNITIES_URL() { return this.DATA_BASE + '/communities-index.json'; },
