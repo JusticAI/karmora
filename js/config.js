@@ -14,6 +14,8 @@ const KARMORA_CONFIG = {
 
 // 全局数据缓存
 let _communitiesCache = null;
+let _fullDataCache = null;
+let _wikiCache = null;
 
 // 加载社区数据（优先用缓存）
 async function loadCommunities() {
@@ -38,14 +40,43 @@ async function loadCommunities() {
 }
 
 // 加载完整社区数据（含规则详情）
-async function loadCommunityDetail(communityName) {
+async function loadFullData() {
+    if (_fullDataCache) return _fullDataCache;
     try {
         const res = await fetch(KARMORA_CONFIG.COMMUNITIES_FULL_URL);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const all = await res.json();
-        return all.find(c => c.name === communityName) || null;
+        _fullDataCache = await res.json();
+        console.log(`[Karmora] 加载完整数据: ${_fullDataCache.length} 社区`);
+        return _fullDataCache;
     } catch (e) {
-        console.error('[Karmora] 详情加载失败:', e);
-        return null;
+        console.error('[Karmora] 完整数据加载失败:', e);
+        return [];
     }
+}
+
+// 加载单个社区详情（从完整数据中查找）
+async function loadCommunityDetail(communityName) {
+    const all = await loadFullData();
+    return all.find(c => c.name === communityName) || null;
+}
+
+// 加载 Wiki 指南
+async function loadWikiGuides() {
+    if (_wikiCache) return _wikiCache;
+    try {
+        const res = await fetch(KARMORA_CONFIG.WIKI_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        _wikiCache = await res.json();
+        console.log(`[Karmora] 加载 Wiki: ${_wikiCache.length} 条指南`);
+        return _wikiCache;
+    } catch (e) {
+        console.error('[Karmora] Wiki 加载失败:', e);
+        return [];
+    }
+}
+
+// 获取指定社区的 Wiki 指南
+async function loadCommunityWiki(communityName) {
+    const guides = await loadWikiGuides();
+    return guides.find(g => g.community === communityName) || null;
 }

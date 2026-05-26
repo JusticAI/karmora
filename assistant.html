@@ -120,13 +120,15 @@
 <script src="js/config.js"></script>
 <script>
 let COMMUNITIES = [];
+let SELECTED_COMMUNITY = null;  // 完整社区数据（含规则）
+let SELECTED_WIKI = null;       // Wiki 指南
 
-// 加载数据
+// 加载索引数据（用于搜索）
 (async () => {
     COMMUNITIES = await loadCommunities();
 })();
 
-// === Searchable subreddit selector ===
+// === 搜索下拉 ===
 const searchInput = document.getElementById('subreddit-search');
 const hiddenInput = document.getElementById('subreddit-value');
 const dropdown = document.getElementById('subreddit-dropdown');
@@ -134,6 +136,9 @@ const dropdown = document.getElementById('subreddit-dropdown');
 searchInput.addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     hiddenInput.value = '';
+    SELECTED_COMMUNITY = null;
+    SELECTED_WIKI = null;
+    document.getElementById('rules-preview').style.display = 'none';
     if (q.length < 1) { dropdown.style.display = 'none'; return; }
     const matches = (COMMUNITIES || []).filter(c =>
         c.name.toLowerCase().includes(q) || (c.title || '').toLowerCase().includes(q)
@@ -145,44 +150,162 @@ searchInput.addEventListener('input', function() {
     dropdown.style.display = 'block';
 });
 
-function selectSub(name) {
-    searchInput.value = `r/${name}`;
-    hiddenInput.value = name;
-    dropdown.style.display = 'none';
-    // Show rules preview
-    showRulesPreview(name);
-}
-
 searchInput.addEventListener('blur', () => {
     setTimeout(() => { dropdown.style.display = 'none'; }, 200);
 });
 
+async function selectSub(name) {
+    searchInput.value = `r/${name}`;
+    hiddenInput.value = name;
+    dropdown.style.display = 'none';
+
+    // P0: 加载完整社区数据（含规则）
+    const preview = document.getElementById('rules-preview');
+    const list = document.getElementById('rules-preview-list');
+    list.innerHTML = '<div class="community-rule-item" style="color:#999;">加载规则数据中...</div>';
+    preview.style.display = 'block';
+
+    SELECTED_COMMUNITY = await loadCommunityDetail(name);
+    SELECTED_WIKI = await loadCommunityWiki(name);
+
+    showRulesPreview(name);
+}
+
 function showRulesPreview(sub) {
     const preview = document.getElementById('rules-preview');
     const list = document.getElementById('rules-preview-list');
-    const community = (COMMUNITIES || []).find(c => c.name === sub);
+    const community = SELECTED_COMMUNITY || (COMMUNITIES || []).find(c => c.name === sub);
+
+    let html = '';
+
+    // 显示规则
     if (community && community.rules && community.rules.length > 0) {
-        list.innerHTML = community.rules.map(r => {
+        html += community.rules.map(r => {
             const sev = r.severity === 'ban' ? '🚫' : r.severity === 'warning' ? '⚠️' : 'ℹ️';
-            return `<div class="community-rule-item">${sev} <span class="rname">${r.name}</span>${r.desc ? ': ' + r.desc : ''}</div>`;
+            return `<div class="community-rule-item">${sev} <span class="rname">${r.name}</span>${r.desc ? ': ' + r.desc.substring(0, 120) : ''}</div>`;
         }).join('');
-        preview.style.display = 'block';
     } else {
-        list.innerHTML = '<div class="community-rule-item" style="color:#999;">该社区暂无详细规则数据，检查将基于通用规则</div>';
-        preview.style.display = 'block';
+        html += '<div class="community-rule-item" style="color:#999;">该社区暂无详细规则数据，检查将基于通用规则</div>';
     }
+
+    // P2: 显示 Wiki 信息
+    if (SELECTED_WIKI && SELECTED_WIKI.posting_guide) {
+        const pg = SELECTED_WIKI.posting_guide;
+        html += `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #EDEFF1;">`;
+        html += `<div style="font-size:12px;color:var(--orange);font-weight:700;margin-bottom:6px;">📖 Wiki 发帖指南</div>`;
+        if (pg.tone) html += `<div class="community-rule-item">🎭 调性: <b>${pg.tone}</b></div>`;
+        if (pg.formatting && pg.formatting.flair_required) html += `<div class="community-rule-item">🏷️ 需要选择 Flair</div>`;
+        if (pg.formatting && pg.formatting.link_policy === 'no_links') html += `<div class="community-rule-item">🔗 不允许发链接</div>`;
+        if (pg.banned_topics && pg.banned_topics.length > 0) html += `<div class="community-rule-item">🚫 禁止话题: ${pg.banned_topics.slice(0,3).join(', ')}</div>`;
+        if (pg.risk_keywords && pg.risk_keywords.length > 0) html += `<div class="community-rule-item">⚡ 风险词: ${pg.risk_keywords.slice(0,5).join(', ')}</div>`;
+        html += `</div>`;
+    }
+
+    list.innerHTML = html;
+    preview.style.display = 'block';
 }
 
-// Old select handler - now handled by search
+// ============================================
+// P1: 从规则 name+desc 提取关键词
+// ============================================
+function extractRuleKeywords(rule) {
+    const text = ((rule.name || '') + ' ' + (rule.desc || '')).toLowerCase();
+    const keywords = [];
 
-// === Rule checking engine ===
+    // 常见规则模式 → 关键词映射
+    const patterns = [
+        { match: /no\s+(spam|spamming)/, kw: ['spam', 'spamming', 'repetitive'] },
+        { match: /no\s+(self[- ]?promo|promotion|advertising)/, kw: ['self-promotion', 'check out my', 'i made', 'i built', 'my product', 'my app', 'my tool'] },
+        { match: /no\s+(link|url|external)/, kw: ['http', 'https', 'www.', '.com', '.io', '.org'] },
+        { match: /no\s+(sell|trading|commerce|transaction)/, kw: ['sell', 'buy', 'order', 'price', 'shop', 'store', 'payment'] },
+        { match: /no\s+(meme|shitpost|low[- ]?effort)/, kw: ['meme', 'shitpost', 'low effort'] },
+        { match: /no\s+(repost|duplicate|similar)/, kw: ['repost', 're-post'] },
+        { match: /no\s+(nsfw|porn|nude|sexual)/, kw: ['nsfw', 'nude', 'sexual', 'porn'] },
+        { match: /no\s+(politic|political)/, kw: ['politic', 'democrat', 'republican', 'trump', 'biden', 'election'] },
+        { match: /no\s+(harass|hate|racism|bigotry)/, kw: ['hate', 'racist', 'slur', 'harass'] },
+        { match: /no\s+(beg|karma|upvote|downvote)/, kw: ['upvote', 'downvote', 'karma', 'please upvote', 'help me reach'] },
+        { match: /no\s+(ai|chatgpt|gpt|artificial)/, kw: ['chatgpt', 'gpt', 'ai generated', 'ai-generated', 'openai'] },
+        { match: /no\s+(survey|research|academic|study)/, kw: ['survey', 'research study', 'academic', 'questionnaire'] },
+        { match: /no\s+(recruit|hiring|job|employment)/, kw: ['hiring', 'job opening', 'recruit', 'resume', 'cv'] },
+        { match: /(account\s*age|karma\s*(requirement|minimum|threshold)|minimum\s*(karma|age))/, kw: [] },
+        { match: /flair\s*(required|mandatory|must)/, kw: [] },
+        { match: /title\s*(must|require|format)/, kw: [] },
+    ];
 
-// Common Reddit-wide violation patterns
+    patterns.forEach(p => {
+        if (p.match.test(text)) {
+            keywords.push(...p.kw);
+        }
+    });
+
+    // 通用提取: "no xxx" 模式
+    const noMatches = text.match(/no\s+([a-z][a-z\s-]{2,20})/g);
+    if (noMatches) {
+        noMatches.forEach(m => {
+            const word = m.replace(/^no\s+/, '').trim();
+            if (word.length > 2 && !keywords.includes(word)) {
+                keywords.push(word);
+            }
+        });
+    }
+
+    return [...new Set(keywords)];
+}
+
+// ============================================
+// P3: 从规则 desc 智能生成修复建议
+// ============================================
+function generateFix(rule) {
+    const name = (rule.name || '').toLowerCase();
+    const desc = (rule.desc || '').toLowerCase();
+    const combined = name + ' ' + desc;
+
+    if (/no\s+(self[- ]?promo|promotion|advertising|spam)/.test(combined))
+        return '删除所有产品链接和推广内容，仅分享经验和知识。用 "I found" 代替 "Check out"';
+    if (/no\s+(link|url|external)/.test(combined))
+        return '移除帖子中的所有链接，如需分享可在评论区自然提及';
+    if (/karma|account\s*age/.test(combined))
+        return '账号条件不够，先在其他社区积累 karma / 等账号满龄后再发帖';
+    if (/no\s+(meme|shitpost|low[- ]?effort)/.test(combined))
+        return '提高内容质量，添加详细的文字说明，避免 meme 格式';
+    if (/title/.test(combined))
+        return '修改标题，确保简洁且符合社区标题规范';
+    if (/flair/.test(combined))
+        return '发帖时选择正确的 flair（标签）';
+    if (/no\s+(repost|duplicate)/.test(combined))
+        return '搜索社区确认没有类似帖子后再发';
+    if (/no\s+(sell|trading|commerce)/.test(combined))
+        return '删除所有买卖相关内容，该社区禁止交易';
+    if (/no\s+(nsfw|porn|sexual)/.test(combined))
+        return '删除所有 NSFW 内容';
+    if (/no\s+(politic|political)/.test(combined))
+        return '删除所有政治相关内容';
+    if (/no\s+(ai|chatgpt|gpt)/.test(combined))
+        return '删除 AI 生成内容，用原创内容替代';
+    if (/no\s+(survey|research)/.test(combined))
+        return '删除问卷/调研内容，该社区不允许此类帖子';
+    if (/no\s+(harass|hate|racism)/.test(combined))
+        return '删除所有攻击性、歧视性内容';
+
+    // fallback: 从 desc 提取关键信息
+    if (desc.length > 20) {
+        const sentences = desc.split(/[.。!！]/).filter(s => s.trim().length > 10);
+        if (sentences.length > 0) {
+            return '建议: ' + sentences[0].trim().substring(0, 80);
+        }
+    }
+    return '仔细阅读该社区规则，调整内容以符合要求';
+}
+
+// ============================================
+// P1+P2: 检查引擎
+// ============================================
+// 全局模式
 const GLOBAL_PATTERNS = [
     { pattern: /https?:\/\/[^\s]+/gi, name: '包含链接', severity: 'warning',
       desc: '新号发链接极易被自动过滤或标记为 spam',
       fix: '建议先不带链接发帖，等获得一定互动后再在评论中补充链接' },
-    { pattern: /\b(buy|shop|order|discount|coupon|promo|sale|deal|off)\b/gi, name: '疑似促销/广告词汇', severity: 'warning',
+    { pattern: /\b(buy|shop|order|discount|coupon|promo|sale|deal)\b/gi, name: '疑似促销/广告词汇', severity: 'warning',
       desc: '含有购物/促销相关词汇，容易被判定为广告',
       fix: '用经验分享的口吻替代推销语气，如 "I found this helpful" 而非 "You should buy this"' },
     { pattern: /\b(check out|visit|sign up|subscribe|download|free trial)\b/gi, name: '行动号召 (CTA)', severity: 'warning',
@@ -191,7 +314,7 @@ const GLOBAL_PATTERNS = [
     { pattern: /\b(dm me|message me|pm me|contact me|reach out)\b/gi, name: '引导私信', severity: 'warning',
       desc: '引导用户私信可能被视为规避社区监督',
       fix: '在公开评论中回答问题，保持透明度' },
-    { pattern: /\b(affiliate|referral|commission|earn money|passive income|side hustle income)\b/gi, name: '联盟营销/返佣词汇', severity: 'ban',
+    { pattern: /\b(affiliate|referral|commission|earn money|passive income)\b/gi, name: '联盟营销/返佣词汇', severity: 'ban',
       desc: '提及联盟营销或返佣，多数社区直接删帖',
       fix: '完全删除任何与佣金/返利相关的内容' },
     { pattern: /\b(upvote|karma|please upvote|help me reach)\b/gi, name: '索要 upvote', severity: 'ban',
@@ -199,103 +322,148 @@ const GLOBAL_PATTERNS = [
       fix: '删除所有请求 upvote 的内容，让内容质量自己说话' },
     { pattern: /\b(i made|i built|i created|my tool|my app|my product|my startup)\b/gi, name: '自我推广嫌疑', severity: 'warning',
       desc: '直接说"我做了XX"容易被视为 self-promotion',
-      fix: '改为第三人称或经验分享角度，如 "I came across this approach" 或 "Here\'s what worked for me"' },
+      fix: '改为第三人称或经验分享角度，如 "I came across this" 或 "Here\'s what worked for me"' },
     { pattern: /\b(first time|new here|new to reddit|my first post)\b/gi, name: '暴露新手身份', severity: 'info',
       desc: '暴露新手身份可能让部分用户更严格审视你的内容',
       fix: '不需要特别说明自己是新手，直接分享有价值的内容即可' },
 ];
 
-// Community-specific rules from data.js
-function getCommunityRules(subName) {
-    if (typeof COMMUNITIES === 'undefined') return [];
-    const community = COMMUNITIES.find(c => c.name === subName);
-    if (!community || !community.rules) return [];
-    return community.rules.map(r => ({
-        name: r.name,
-        severity: r.severity || 'warning',
-        desc: r.desc || '',
-        keywords: r.keywords || [],
-        fix: generateFix(r)
-    }));
-}
-
-function generateFix(rule) {
-    const name = (rule.name || '').toLowerCase();
-    if (name.includes('no promo') || name.includes('no spam') || name.includes('no self-promo'))
-        return '删除所有产品链接和推广内容，仅分享经验和知识';
-    if (name.includes('no link') || name.includes('no url'))
-        return '移除帖子中的所有链接，在评论区自然提及';
-    if (name.includes('karma') || name.includes('account age'))
-        return '先在其他社区积累 karma，达到要求后再发帖';
-    if (name.includes('no meme') || name.includes('no low'))
-        return '提高内容质量，添加详细的文字说明';
-    if (name.includes('title'))
-        return '修改标题，确保简洁且符合社区标题规范';
-    if (name.includes('flair'))
-        return '发帖时选择正确的 flair（标签）';
-    if (name.includes('repost') || name.includes('duplicate'))
-        return '搜索社区确认没有类似帖子后再发';
-    return '仔细阅读该社区规则，调整内容以符合要求';
-}
-
-// Check content against rules
 function checkContent(subName, content) {
     const issues = [];
     const lowerContent = content.toLowerCase();
 
-    // Check global patterns
+    // 全局模式检测
     GLOBAL_PATTERNS.forEach(p => {
         const matches = content.match(p.pattern);
         if (matches) {
             issues.push({
-                name: p.name,
-                severity: p.severity,
-                desc: p.desc,
+                name: p.name, severity: p.severity, desc: p.desc,
                 matches: [...new Set(matches.map(m => m.length > 60 ? m.substring(0, 60) + '...' : m))].slice(0, 3),
-                fix: p.fix,
-                source: 'global'
+                fix: p.fix, source: 'global'
             });
         }
     });
 
-    // Check community-specific rules
-    const communityRules = getCommunityRules(subName);
-    communityRules.forEach(rule => {
-        // Check keywords
-        if (rule.keywords && rule.keywords.length > 0) {
-            const matched = rule.keywords.filter(kw => lowerContent.includes(kw.toLowerCase()));
+    // P1: 社区规则检测
+    const community = SELECTED_COMMUNITY;
+    if (community && community.rules) {
+        community.rules.forEach(rule => {
+            const keywords = extractRuleKeywords(rule);
+            if (keywords.length === 0) return;
+
+            const matched = keywords.filter(kw => lowerContent.includes(kw.toLowerCase()));
             if (matched.length > 0) {
                 issues.push({
                     name: `社区规则: ${rule.name}`,
-                    severity: rule.severity,
-                    desc: rule.desc,
-                    matches: matched,
-                    fix: rule.fix,
+                    severity: rule.severity || 'warning',
+                    desc: rule.desc || '',
+                    matches: matched.slice(0, 5),
+                    fix: generateFix(rule),
                     source: 'community'
                 });
             }
+        });
+    }
+
+    // P2: Wiki 检测
+    if (SELECTED_WIKI && SELECTED_WIKI.posting_guide) {
+        const pg = SELECTED_WIKI.posting_guide;
+
+        // 检查 risk_keywords
+        if (pg.risk_keywords && pg.risk_keywords.length > 0) {
+            const matched = pg.risk_keywords.filter(kw => lowerContent.includes(kw.toLowerCase()));
+            if (matched.length > 0) {
+                issues.push({
+                    name: 'Wiki 风险词检测',
+                    severity: 'warning',
+                    desc: '内容包含该社区 Wiki 标记的风险关键词',
+                    matches: matched.slice(0, 5),
+                    fix: '参考社区 Wiki 发帖指南，调整用词以符合社区规范',
+                    source: 'wiki'
+                });
+            }
         }
+
+        // 检查 banned_topics
+        if (pg.banned_topics && pg.banned_topics.length > 0) {
+            pg.banned_topics.forEach(topic => {
+                const topicLower = topic.toLowerCase();
+                const topicWords = topicLower.split(/[,，\s]+/).filter(w => w.length > 3);
+                const matched = topicWords.filter(w => lowerContent.includes(w));
+                if (matched.length >= Math.min(2, topicWords.length)) {
+                    issues.push({
+                        name: `Wiki 禁止话题: ${topic.substring(0, 40)}`,
+                        severity: 'ban',
+                        desc: '该社区 Wiki 明确禁止此类话题',
+                        matches: matched.slice(0, 3),
+                        fix: '移除与该禁止话题相关的内容，或换一个社区发布',
+                        source: 'wiki'
+                    });
+                }
+            });
+        }
+
+        // 格式检查
+        if (pg.formatting) {
+            if (pg.formatting.flair_required && !content.includes('[') && content.length > 50) {
+                issues.push({
+                    name: '需要选择 Flair',
+                    severity: 'info',
+                    desc: '该社区要求发帖时选择 Flair 标签',
+                    matches: [],
+                    fix: '发帖时在标题或正文前添加 [Flair名] 或使用 Reddit 的 Flair 功能',
+                    source: 'wiki'
+                });
+            }
+        }
+    }
+
+    // 去重（同一 severity 的同名规则只保留一个）
+    const seen = new Set();
+    const deduped = issues.filter(i => {
+        const key = i.name + ':' + i.severity;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
     });
 
-    // Sort: ban > warning > info
+    // 排序: ban > warning > info
     const order = { ban: 0, warning: 1, info: 2 };
-    issues.sort((a, b) => (order[a.severity] || 9) - (order[b.severity] || 9));
+    deduped.sort((a, b) => (order[a.severity] || 9) - (order[b.severity] || 9));
 
-    return issues;
+    return deduped;
 }
 
-// Calculate safety score (0-100, higher = safer)
+// ============================================
+// P4: 评分算法
+// ============================================
 function calcScore(issues) {
+    if (issues.length === 0) return 100;
+
     let score = 100;
-    issues.forEach(i => {
-        if (i.severity === 'ban') score -= 25;
-        else if (i.severity === 'warning') score -= 15;
-        else score -= 5;
-    });
-    return Math.max(0, score);
+    // 同一 severity 只扣一次（取最高影响）
+    const hasBan = issues.some(i => i.severity === 'ban');
+    const hasWarn = issues.some(i => i.severity === 'warning');
+    const hasInfo = issues.some(i => i.severity === 'info');
+    const wikiBan = issues.some(i => i.source === 'wiki' && i.severity === 'ban');
+
+    if (hasBan) score -= 40;
+    if (wikiBan) score -= 15;  // Wiki 明确禁止，额外扣分
+    if (hasWarn) score -= 20;
+    if (hasInfo) score -= 5;
+
+    // 多个同类违规叠加
+    const banCount = issues.filter(i => i.severity === 'ban').length;
+    const warnCount = issues.filter(i => i.severity === 'warning').length;
+    if (banCount > 1) score -= (banCount - 1) * 10;
+    if (warnCount > 2) score -= (warnCount - 2) * 5;
+
+    return Math.max(0, Math.min(100, score));
 }
 
-// === Render results ===
+// ============================================
+// 渲染结果
+// ============================================
 function renderResults(subName, content, issues) {
     const area = document.getElementById('result-area');
     const resultContent = document.getElementById('result-content');
@@ -316,13 +484,14 @@ function renderResults(subName, content, issues) {
     const scoreText = score >= 70 ? '低风险' : score >= 40 ? '中风险' : '高风险';
     const banCount = issues.filter(i => i.severity === 'ban').length;
     const warnCount = issues.filter(i => i.severity === 'warning').length;
+    const wikiCount = issues.filter(i => i.source === 'wiki').length;
 
     let html = `
         <div class="result-header">
             <div class="score-circle ${scoreClass}">${score}</div>
             <div class="score-info">
                 <div class="big">${scoreText}</div>
-                <div>发现 ${issues.length} 个风险点${banCount > 0 ? `（<span style="color:#C62828">${banCount} 个严重</span>）` : ''}${warnCount > 0 ? `（<span style="color:#E65100">${warnCount} 个警告</span>）` : ''}</div>
+                <div>发现 ${issues.length} 个风险点${banCount > 0 ? `（<span style="color:#C62828">${banCount} 个严重</span>）` : ''}${warnCount > 0 ? `（<span style="color:#E65100">${warnCount} 个警告</span>）` : ''}${wikiCount > 0 ? `（${wikiCount} 个来自 Wiki）` : ''}</div>
             </div>
         </div>
         <div class="rules-list">`;
@@ -331,11 +500,12 @@ function renderResults(subName, content, issues) {
         const sevClass = issue.severity === 'ban' ? 'danger' : issue.severity === 'warning' ? 'warning' : 'info';
         const sevLabel = issue.severity === 'ban' ? '🚫 严重' : issue.severity === 'warning' ? '⚠️ 警告' : 'ℹ️ 提示';
         const sevBadgeClass = issue.severity === 'ban' ? 'severity-ban' : issue.severity === 'warning' ? 'severity-warning' : 'severity-info';
+        const sourceTag = issue.source === 'wiki' ? ' <span style="font-size:10px;color:#9C27B0;">[Wiki]</span>' : issue.source === 'community' ? ' <span style="font-size:10px;color:#1565C0;">[规则]</span>' : '';
 
         html += `
             <div class="rule-card ${sevClass}">
                 <div class="rule-header">
-                    <span class="rule-name">${issue.name}</span>
+                    <span class="rule-name">${issue.name}${sourceTag}</span>
                     <span class="rule-severity ${sevBadgeClass}">${sevLabel}</span>
                 </div>
                 <div class="rule-desc">${issue.desc}</div>`;
@@ -353,8 +523,8 @@ function renderResults(subName, content, issues) {
     resultContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// === Main check button ===
-document.getElementById('check-btn').addEventListener('click', () => {
+// === 主按钮 ===
+document.getElementById('check-btn').addEventListener('click', async () => {
     const sub = document.getElementById('subreddit-value').value || document.getElementById('subreddit-search').value.replace('r/', '').trim();
     const content = document.getElementById('content-input').value.trim();
 
@@ -363,16 +533,24 @@ document.getElementById('check-btn').addEventListener('click', () => {
 
     const btn = document.getElementById('check-btn');
     btn.disabled = true;
+    btn.textContent = '🔍 加载规则数据...';
+
+    // P0: 确保完整数据已加载
+    if (!SELECTED_COMMUNITY || SELECTED_COMMUNITY.name !== sub) {
+        SELECTED_COMMUNITY = await loadCommunityDetail(sub);
+        SELECTED_WIKI = await loadCommunityWiki(sub);
+    }
+
     btn.textContent = '🔍 检查中...';
 
-    // Simulate brief processing
     setTimeout(() => {
         const issues = checkContent(sub, content);
         renderResults(sub, content, issues);
         btn.disabled = false;
         btn.textContent = '🔍 检查规则风险';
-    }, 300);
+    }, 100);
 });
+</script>
 </script>
 </body>
 </html>
