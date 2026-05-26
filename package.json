@@ -7,8 +7,5 @@
     "build": "echo 'Static site, no build needed'",
     "deploy": "vercel --prod"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.105.3",
-    "bcryptjs": "^3.0.3"
-  }
+  "dependencies": {}
 }

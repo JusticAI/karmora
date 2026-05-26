@@ -93,39 +93,12 @@
 <body>
 
 <!-- ===== BETA BANNER ===== -->
-<div class="beta-banner" id="betaBanner" style="display:none;">
+<div class="beta-banner" id="betaBanner">
     <span class="badge">Beta</span>
-    内测期：所有功能限时免费
-    <span class="note">— 内测结束后将转为会员制收费模式</span>
-    <span class="subscribe-btn">📋 会员订阅（即将开放）</span>
+    所有功能免费开放
 </div>
 
-<script>
-    // 统一 auth 检查：支持两种登录方式
-    const karmoraUser = localStorage.getItem('karmora_user');
-    const karmoraUnlocked = localStorage.getItem('karmora_unlocked');
-    
-    if (!karmoraUser && !karmoraUnlocked) {
-        window.location.href = 'login.html';
-    }
-    
-    // 如果只有 karmora_unlocked，也设定 karmora_user
-    if (!karmoraUser && karmoraUnlocked) {
-        localStorage.setItem('karmora_user', JSON.stringify({
-            email: 'user@karmora.com',
-            status: 'beta',
-            loginAt: new Date().toISOString()
-        }));
-    }
-    
-    // 显示 Beta Banner
-    try {
-        const user = JSON.parse(localStorage.getItem('karmora_user') || '{}');
-        if (user.status === 'beta') {
-            document.getElementById('betaBanner').style.display = 'block';
-        }
-    } catch(e) {}
-</script>
+
 <nav>
     <div class="nav-inner">
         <a href="index.html" class="logo"><div class="logo-icon">K</div>Karmora</a>
@@ -133,27 +106,12 @@
             <a href="communities.html" class="nav-link">社区数据库</a>
             <a href="match.html" class="nav-link">智能匹配</a>
             <a href="dashboard.html" class="nav-link active">路径规划</a>
-            <a href="assistant.html" class="nav-link">AI 助手</a>
+            <a href="assistant.html" class="nav-link">规则检查</a>
         </div>
-        <div class="nav-right" style="display:flex;align-items:center;gap:12px;">
-            <span id="userEmail" style="font-size:13px;color:#787C7E;"></span>
-            <a href="#" onclick="logout()" class="nav-link" style="font-size:13px;color:#FF585B;">退出</a>
-        </div>
+
     </div>
 </nav>
-<script>
-// 显示用户邮箱
-try {
-    const u = JSON.parse(localStorage.getItem('karmora_user') || '{}');
-    if (u.email) document.getElementById('userEmail').textContent = u.email;
-} catch(e) {}
-function logout() {
-    localStorage.removeItem('karmora_user');
-    localStorage.removeItem('karmora_unlocked');
-    sessionStorage.removeItem('karmora_user');
-    window.location.href = '/login.html';
-}
-</script>
+
 
 <div class="page">
     <h1 class="page-title">🗺️ 路径规划</h1>
@@ -212,10 +170,11 @@ function logout() {
 
 <footer>Karmora © 2026 · 帮你安全度过 Reddit 冷启动期</footer>
 
-<script src="js/data.js"></script>
+<script src="js/config.js"></script>
 <script>
-function generatePlan(karma, ageDays) {
+async function generatePlan(karma, ageDays) {
     const output = document.getElementById('plan-output');
+    const COMMUNITIES = await loadCommunities();
 
     // Phase determination: karma + age
     let phase, phaseName, phaseTime, phaseGoal;

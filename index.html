@@ -481,18 +481,12 @@
     </style>
 </head>
 <body>
-<script>
-// 已登录用户直接跳转到功能界面
-if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlocked')) {
-    window.location.href = '/dashboard.html';
-}
-</script>
+
 
     <!-- ==================== BETA BANNER ==================== -->
     <div class="beta-banner" id="betaBanner">
         <span class="badge">Beta</span>
-        <span id="bannerText">您当前处于 Beta 内测阶段。内测结束后，系统将转为会员制收费模式。</span>
-        <span class="note">— 内测期间所有功能限时免费</span>
+        <span>所有功能免费开放</span>
     </div>
 
     <!-- ==================== NAV ==================== -->
@@ -503,10 +497,11 @@ if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlock
                 Karmora
             </a>
             <div class="nav-links">
-                <a href="#features" class="nav-link">功能介绍</a>
-                <a href="#apply" class="nav-link">申请内测</a>
+                <a href="communities.html" class="nav-link">社区数据库</a>
+                <a href="match.html" class="nav-link">智能匹配</a>
+                <a href="assistant.html" class="nav-link">规则检查</a>
             </div>
-            <a id="navCta" href="#apply" class="nav-cta">申请内测 →</a>
+            <a href="communities.html" class="nav-cta">开始使用 →</a>
         </div>
     </nav>
 
@@ -514,7 +509,7 @@ if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlock
     <section class="hero">
         <div class="hero-badge">
             <span class="dot"></span>
-            内测申请开放中
+            免费使用
         </div>
         <h1>
             精准掌控你的
@@ -525,7 +520,7 @@ if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlock
         </p>
 
         <div class="hero-actions">
-            <a href="#apply" class="btn-primary">🎟 申请内测名额</a>
+            <a href="communities.html" class="btn-primary">🚀 开始使用</a>
             <a href="#features" class="btn-secondary">了解更多 ↓</a>
         </div>
         <div class="hero-stats">
@@ -534,42 +529,24 @@ if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlock
                 <div class="label">社区分析</div>
             </div>
             <div class="hero-stat">
-                <div class="num">116K</div>
-                <div class="label">帖子数据</div>
+                <div class="num">5,265</div>
+                <div class="label">规则覆盖</div>
             </div>
             <div class="hero-stat">
-                <div class="num">24h</div>
-                <div class="label">审核时长</div>
+                <div class="num">100%</div>
+                <div class="label">免费使用</div>
             </div>
         </div>
     </section>
 
-    <!-- ==================== URGENCY ==================== -->
-    <section class="urgency" id="urgency">
-        <div class="urgency-inner">
-            <h2>🎟 内测名额限时开放</h2>
-            <p>内测期间所有功能免费开放，审核通过后即可解锁全部功能。内测结束后将转为会员制。</p>
-            <div class="urgency-grid">
-                <div class="urgency-card">
-                    <div class="icon">🎁</div>
-                    <h3>终身折扣权益</h3>
-                    <p>内测用户享正式版 7 折，永久有效，不限时长。</p>
-                    <span class="tag">仅限内测</span>
-                </div>
-                <div class="urgency-card">
-                    <div class="icon">⚡</div>
-                    <h3>抢先使用权限</h3>
-                    <p>比全体用户提前 30 天使用新功能，优先反馈权。</p>
-                    <span class="tag">仅限内测</span>
-                </div>
-                <div class="urgency-card">
-                    <div class="icon">🏆</div>
-                    <h3>创始会员标识</h3>
-                    <p>账号获得专属创始会员徽章，社区声望加持。</p>
-                    <span class="tag">仅限内测</span>
-                </div>
-            </div>
-
+    <!-- ==================== CTA ==================== -->
+    <section class="cta-section" id="apply">
+        <h2>开始使用 Karmora</h2>
+        <p>无需注册，直接访问全部功能。</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+            <a href="communities.html" class="btn-primary" style="text-decoration:none;">📊 社区数据库</a>
+            <a href="match.html" class="btn-primary" style="text-decoration:none;">🎯 智能匹配</a>
+            <a href="assistant.html" class="btn-primary" style="text-decoration:none;">🛡️ 规则检查</a>
         </div>
     </section>
 
@@ -600,39 +577,14 @@ if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlock
             <div class="feature-card">
                 <div class="icon">🔐</div>
                 <h3>隐私安全优先</h3>
-                <p>数据基于公开信息采集，不保存任何 Reddit 凭证，内测期间所有功能免费开放。</p>
+                <p>数据基于公开信息采集，不保存任何 Reddit 凭证，所有功能免费开放。</p>
             </div>
         </div>
     </section>
 
-    <!-- ==================== CTA / APPLY ==================== -->
-    <section class="cta-section" id="apply">
-        <div class="limitation">内测名额有限，申请从速</div>
-        <h2>申请内测资格</h2>
-        <p>填写邮箱加入等待列表，审核通过后我们将发送登录链接。</p>
-        <form class="cta-form" id="applyForm" onsubmit="return handleApply(event)">
-            <input type="email" id="applyEmail" placeholder="输入你的邮箱地址" required>
-            <button type="submit" id="applyBtn">提交申请</button>
-        </form>
-        <div class="cta-note">审核通过后将在 24 小时内通过邮件通知。无需创建账户。</div>
-    </section>
 
-    <!-- ==================== MODAL ==================== -->
-    <div class="modal-overlay" id="successModal">
-        <div class="modal">
-            <div class="icon">🎉</div>
-            <h3>申请已提交！</h3>
-            <p>我们已收到你的内测申请，审核将在 <strong>24 小时</strong> 内完成。</p>
-            <div class="email-display" id="submittedEmail">example@email.com</div>
-            <ul class="steps">
-                <li><span class="step-num">1</span> 提交邮箱申请内测</li>
-                <li><span class="step-num">2</span> 后台审核（通常 24h）</li>
-                <li><span class="step-num">3</span> 审核通过 → 邮箱收到登录链接</li>
-                <li><span class="step-num">4</span> 点击链接开始使用 Karmora</li>
-            </ul>
-            <button onclick="closeModal()">我知道了</button>
-        </div>
-    </div>
+
+
 
     <!-- ==================== FOOTER ==================== -->
     <footer>
@@ -641,116 +593,6 @@ if (localStorage.getItem('karmora_user') || localStorage.getItem('karmora_unlock
     </footer>
 
     <script>
-        const API_BASE = window.location.origin;
-
-        // ===== HANDLE APPLY (email submit) =====
-        async function handleApply(e) {
-            e.preventDefault();
-            const email = document.getElementById('applyEmail').value.trim();
-            const btn = document.getElementById('applyBtn');
-
-            if (!email || !email.includes('@')) return false;
-
-            btn.disabled = true;
-            btn.textContent = '提交中...';
-
-            try {
-                const res = await fetch(API_BASE + '/api/apply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-
-                btn.disabled = false;
-                btn.textContent = '提交申请';
-
-                if (res.ok) {
-                    document.getElementById('applyEmail').value = '';
-                    showModal(email, data.message);
-                } else {
-                    showModal(email, data.error || '提交失败，请稍后重试', true);
-                }
-            } catch (err) {
-                btn.disabled = false;
-                btn.textContent = '提交申请';
-                showModal(email, '网络错误，请检查连接后重试', true);
-            }
-
-            return false;
-        }
-
-        function showModal(email, message, isError = false) {
-            document.getElementById('submittedEmail').textContent = email;
-            const modal = document.getElementById('successModal');
-            const icon = modal.querySelector('.icon');
-            const p = modal.querySelector('.modal p');
-            const closeBtn = modal.querySelector('button');
-
-            if (isError) {
-                icon.textContent = '⚠️';
-                closeBtn.style.background = '#787C7E';
-            } else {
-                icon.textContent = '🎉';
-                closeBtn.style.background = '#1A1A1B';
-            }
-            p.innerHTML = message;
-            document.getElementById('successModal').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('successModal').classList.remove('show');
-        }
-
-        document.getElementById('successModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        // ===== URL PARAMS — 处理审核通过登录链接 =====
-        // ?login=token 或 ?token=xxx
-        (async function handleLoginLink() {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('login') || params.get('token');
-
-            if (!token) return;
-
-            // 显示加载状态
-            const hero = document.querySelector('.hero') || document.body;
-            const loader = document.createElement('div');
-            loader.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#FF4500;';
-            loader.textContent = '正在验证登录...';
-            document.body.appendChild(loader);
-
-            try {
-                const res = await fetch(API_BASE + '/api/verify-login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token })
-                });
-                const data = await res.json();
-
-                if (res.ok) {
-                    // 登录成功，保存到 localStorage
-                    localStorage.setItem('karmora_user', JSON.stringify({
-                        email: data.email,
-                        status: data.status,
-                        loginAt: new Date().toISOString()
-                    }));
-                    // 清除 URL 参数
-                    window.history.replaceState({}, '', '/');
-                    window.location.href = '/dashboard.html';
-                } else {
-                    loader.remove();
-                    alert(data.error || '登录失败');
-                    window.history.replaceState({}, '', '/');
-                }
-            } catch (err) {
-                loader.remove();
-                alert('网络错误，请稍后重试');
-                window.history.replaceState({}, '', '/');
-            }
-        })();
-
         // ===== SMOOTH SCROLL =====
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {

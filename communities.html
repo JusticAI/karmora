@@ -69,30 +69,18 @@
     </style>
 </head>
 <body>
-<script>
-    if (localStorage.getItem("karmora_unlocked") !== "true") {
-        window.location.href = "index.html";
-    }
-</script>
-<div class="beta-banner"><span class="badge">Beta</span>内测期：所有功能限时免费<span class="note"> — 内测结束后将转为会员制收费模式</span></div>
+<div class="beta-banner"><span class="badge">Beta</span>所有功能免费开放</div>
 <nav>
     <div class="nav-inner">
         <a href="index.html" class="logo"><div class="logo-icon">K</div>Karmora</a>
         <div class="nav-links">
             <a href="communities.html" class="nav-link active">社区数据库</a>
             <a href="match.html" class="nav-link">智能匹配</a>
+            <a href="dashboard.html" class="nav-link">路径规划</a>
             <a href="assistant.html" class="nav-link">规则检查</a>
-        </div>
-        <div class="nav-right" style="display:flex;align-items:center;gap:12px;">
-            <span id="userEmail" style="font-size:13px;color:#787C7E;"></span>
-            <a href="#" onclick="logout()" class="nav-link" style="font-size:13px;color:#FF585B;">退出</a>
         </div>
     </div>
 </nav>
-<script>
-try{const u=JSON.parse(localStorage.getItem('karmora_user')||'{}');if(u.email)document.getElementById('userEmail').textContent=u.email;}catch(e){}
-function logout(){localStorage.removeItem('karmora_user');localStorage.removeItem('karmora_unlocked');sessionStorage.removeItem('karmora_user');window.location.href='/login.html';}
-</script>
 
 <div class="page">
     <h1 class="page-title">📊 社区数据库</h1>
@@ -130,8 +118,9 @@ function logout(){localStorage.removeItem('karmora_user');localStorage.removeIte
 
 <footer>Karmora © 2026 · 帮你安全度过 Reddit 冷启动期</footer>
 
-<script src="js/data.js"></script>
+<script src="js/config.js"></script>
 <script>
+let COMMUNITIES = [];
 const PER_PAGE = 50;
 let currentPage = 1;
 let currentCategory = 'all';
@@ -254,6 +243,12 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
         render();
     }, 200);
 });
+
+// 初始化加载数据
+(async () => {
+    COMMUNITIES = await loadCommunities();
+    render();
+})();
 
 // Filter + Sort + Paginate
 function getFiltered() {
